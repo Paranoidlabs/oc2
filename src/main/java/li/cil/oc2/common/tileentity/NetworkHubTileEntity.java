@@ -4,6 +4,7 @@ import li.cil.oc2.api.capabilities.NetworkInterface;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.capabilities.Capabilities;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -11,18 +12,21 @@ import net.minecraftforge.common.util.LazyOptional;
 
 import javax.annotation.Nullable;
 
-public final class NetworkHubTileEntity extends AbstractTileEntity implements NetworkInterface {
-    private static final int TTL_COST = 1;
+public class NetworkHubTileEntity extends AbstractTileEntity implements NetworkInterface {
+    protected static final int TTL_COST = 1;
 
     ///////////////////////////////////////////////////////////////////
 
-    private final NetworkInterface[] adjacentInterfaces = new NetworkInterface[Constants.BLOCK_FACE_COUNT];
-    private boolean areAdjacentInterfacesDirty = true;
+    protected final NetworkInterface[] adjacentInterfaces = new NetworkInterface[Constants.BLOCK_FACE_COUNT];
+    protected boolean areAdjacentInterfacesDirty = true;
 
     ///////////////////////////////////////////////////////////////////
 
     public NetworkHubTileEntity() {
         super(TileEntities.NETWORK_HUB_TILE_ENTITY.get());
+    }
+    protected NetworkHubTileEntity(final TileEntityType<?> tileEntityType) {
+        super(tileEntityType);
     }
 
     ///////////////////////////////////////////////////////////////////
@@ -56,7 +60,7 @@ public final class NetworkHubTileEntity extends AbstractTileEntity implements Ne
 
     ///////////////////////////////////////////////////////////////////
 
-    private void validateAdjacentInterfaces() {
+    protected void validateAdjacentInterfaces() {
         if (!areAdjacentInterfacesDirty || isRemoved()) {
             return;
         }
