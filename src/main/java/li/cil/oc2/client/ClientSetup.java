@@ -9,12 +9,12 @@ import li.cil.oc2.client.item.CustomItemColors;
 import li.cil.oc2.client.item.CustomItemModelProperties;
 import li.cil.oc2.client.model.BusCableModelLoader;
 import li.cil.oc2.client.renderer.BusInterfaceNameRenderer;
-import li.cil.oc2.client.renderer.NetworkCableRenderer;
+import li.cil.oc2.client.renderer.HangingCableRenderer;
 import li.cil.oc2.client.renderer.entity.RobotEntityRenderer;
 import li.cil.oc2.client.renderer.tileentity.ChargerTileEntityRenderer;
 import li.cil.oc2.client.renderer.tileentity.ComputerTileEntityRenderer;
 import li.cil.oc2.client.renderer.tileentity.DiskDriveTileEntityRenderer;
-import li.cil.oc2.client.renderer.tileentity.NetworkConnectorTileEntityRenderer;
+import li.cil.oc2.client.renderer.tileentity.CableConnectorTileEntityRenderer;
 import li.cil.oc2.common.block.Blocks;
 import li.cil.oc2.common.bus.device.DeviceTypes;
 import li.cil.oc2.common.container.Containers;
@@ -33,7 +33,7 @@ import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 public final class ClientSetup {
     @SubscribeEvent
     public static void handleSetupEvent(final FMLClientSetupEvent event) {
-        NetworkCableRenderer.initialize();
+        HangingCableRenderer.initialize();
         BusInterfaceNameRenderer.initialize();
         CustomItemModelProperties.initialize();
         CustomItemColors.initialize();
@@ -44,7 +44,7 @@ public final class ClientSetup {
         ScreenManager.register(Containers.ROBOT_TERMINAL_CONTAINER.get(), RobotTerminalScreen::new);
 
         ClientRegistry.bindTileEntityRenderer(TileEntities.COMPUTER_TILE_ENTITY.get(), ComputerTileEntityRenderer::new);
-        ClientRegistry.bindTileEntityRenderer(TileEntities.NETWORK_CONNECTOR_TILE_ENTITY.get(), NetworkConnectorTileEntityRenderer::new);
+        ClientRegistry.bindTileEntityRenderer(TileEntities.NETWORK_CONNECTOR_TILE_ENTITY.get(), CableConnectorTileEntityRenderer::new);
         ClientRegistry.bindTileEntityRenderer(TileEntities.DISK_DRIVE_TILE_ENTITY.get(), DiskDriveTileEntityRenderer::new);
         ClientRegistry.bindTileEntityRenderer(TileEntities.CHARGER_TILE_ENTITY.get(), ChargerTileEntityRenderer::new);
 

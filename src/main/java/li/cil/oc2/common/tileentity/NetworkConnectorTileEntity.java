@@ -1,7 +1,7 @@
 package li.cil.oc2.common.tileentity;
 
 import li.cil.oc2.api.capabilities.NetworkInterface;
-import li.cil.oc2.client.renderer.NetworkCableRenderer;
+import li.cil.oc2.client.renderer.HangingCableRenderer;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.block.NetworkConnectorBlock;
 import li.cil.oc2.common.capabilities.Capabilities;
@@ -16,12 +16,12 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.ListNBT;
-import net.minecraft.nbt.NBTUtil;
 import net.minecraft.tileentity.ITickableTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.*;
 import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.util.math.vector.Vector3f;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.api.distmarker.Dist;
@@ -29,12 +29,12 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.util.LazyOptional;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
+import java.util.stream.Collectors;
 
-public final class NetworkConnectorTileEntity extends AbstractTileEntity implements ITickableTileEntity {
+import static li.cil.oc2.client.renderer.HangingCableRenderer.CABLE_COLOR;
+
+public final class NetworkConnectorTileEntity extends CableConnectorTileEntity implements ITickableTileEntity {
     public enum ConnectionResult {
         SUCCESS,
         FAILURE,
@@ -63,7 +63,7 @@ public final class NetworkConnectorTileEntity extends AbstractTileEntity impleme
     private LazyOptional<NetworkInterface> localInterface = LazyOptional.empty();
     private boolean isLocalConnectionDirty = true;
 
-    private final HashSet<BlockPos> connectorPositions = new HashSet<>();
+    private final HashMap<BlockPos, Vector3f> cableConnections = new HashMap<>();
     private final HashSet<BlockPos> ownedCables = new HashSet<>();
     private final HashSet<BlockPos> dirtyConnectors = new HashSet<>();
     private final HashMap<BlockPos, NetworkConnectorTileEntity> connectors = new HashMap<>();
@@ -77,6 +77,10 @@ public final class NetworkConnectorTileEntity extends AbstractTileEntity impleme
     ///////////////////////////////////////////////////////////////////
 
     public static ConnectionResult connect(final NetworkConnectorTileEntity connectorA, final NetworkConnectorTileEntity connectorB) {
+        return connect(connectorA, connectorB, CABLE_COLOR);
+    }
+
+    public static ConnectionResult connect(final NetworkConnectorTileEntity connectorA, final NetworkConnectorTileEntity connectorB, final Vector3f color) {
         if (connectorA == connectorB || connectorA.isRemoved() || connectorB.isRemoved()) {
             return ConnectionResult.FAILURE;
         }
@@ -105,12 +109,14 @@ public final class NetworkConnectorTileEntity extends AbstractTileEntity impleme
             return ConnectionResult.FAILURE_OBSTRUCTED;
         }
 
-        if (connectorA.connectorPositions.add(posB)) {
+        if (!connectorA.cableConnections.containsKey(posB)) {
+            connectorA.cableConnections.put(posB, color);
             connectorA.dirtyConnectors.add(posB);
             connectorA.onConnectedPositionsChanged();
         }
 
-        if (connectorB.connectorPositions.add(posA)) {
+        if (!connectorB.cableConnections.containsKey(posA)) {
+            connectorB.cableConnections.put(posA, color);
             connectorB.dirtyConnectors.add(posA);
             connectorB.onConnectedPositionsChanged();
         }
@@ -143,7 +149,8 @@ public final class NetworkConnectorTileEntity extends AbstractTileEntity impleme
         }
 
         if (!isRemoved()) {
-            if (connectorPositions.remove(pos)) {
+            if (cableConnections.containsKey(pos)) {
+                cableConnections.remove(pos);
                 onConnectedPositionsChanged();
             }
 
@@ -152,11 +159,15 @@ public final class NetworkConnectorTileEntity extends AbstractTileEntity impleme
     }
 
     public boolean canConnectMore() {
-        return connectorPositions.size() < MAX_CONNECTION_COUNT;
+        return cableConnections.size() < MAX_CONNECTION_COUNT;
     }
 
-    public Collection<BlockPos> getConnectedPositions() {
-        return connectorPositions;
+    public Collection<CableConnection> getConnected() {
+        return cableConnections
+                .entrySet()
+                .stream()
+                .map(it -> new CableConnection(it.getKey(), it.getValue()))
+                .collect(Collectors.toCollection(HashSet::new));
     }
 
     public void setLocalInterfaceChanged() {
@@ -164,10 +175,10 @@ public final class NetworkConnectorTileEntity extends AbstractTileEntity impleme
     }
 
     @OnlyIn(Dist.CLIENT)
-    public void setConnectedPositionsClient(final ArrayList<BlockPos> positions) {
-        connectorPositions.clear();
-        connectorPositions.addAll(positions);
-        NetworkCableRenderer.invalidateConnections();
+    public void setConnectedPositionsClient(final ArrayList<CableConnection> connections) {
+        cableConnections.clear();
+        connections.forEach(it -> cableConnections.put(it.blockPos, it.color));
+        HangingCableRenderer.invalidateConnections();
     }
 
     @Override
@@ -200,10 +211,7 @@ public final class NetworkConnectorTileEntity extends AbstractTileEntity impleme
         final CompoundNBT tag = super.getUpdateTag();
 
         final ListNBT connections = new ListNBT();
-        for (final BlockPos position : connectorPositions) {
-            final CompoundNBT connectionTag = NBTUtil.writeBlockPos(position);
-            connections.add(connectionTag);
-        }
+        cableConnections.forEach((blockPos, color) -> connections.add(CableConnection.write(blockPos, color)));
         tag.put(CONNECTIONS_TAG_NAME, connections);
 
         return tag;
@@ -216,9 +224,9 @@ public final class NetworkConnectorTileEntity extends AbstractTileEntity impleme
         final ListNBT connections = tag.getList(CONNECTIONS_TAG_NAME, NBTTagIds.TAG_COMPOUND);
         for (int i = 0; i < Math.min(connections.size(), MAX_CONNECTION_COUNT); i++) {
             final CompoundNBT connectionTag = connections.getCompound(i);
-            final BlockPos position = NBTUtil.readBlockPos(connectionTag);
-            connectorPositions.add(position);
-            dirtyConnectors.add(position);
+            final CableConnection conn = CableConnection.load(connectionTag);
+            cableConnections.put(conn.blockPos, conn.color);
+            dirtyConnectors.add(conn.blockPos);
         }
     }
 
@@ -227,13 +235,13 @@ public final class NetworkConnectorTileEntity extends AbstractTileEntity impleme
         tag = super.save(tag);
 
         final ListNBT connections = new ListNBT();
-        for (final BlockPos position : connectorPositions) {
-            final CompoundNBT connectionTag = NBTUtil.writeBlockPos(position);
-            if (ownedCables.contains(position)) {
+        cableConnections.forEach((blockPos, color) -> {
+            final CompoundNBT connectionTag = CableConnection.write(blockPos, color);
+            if (ownedCables.contains(blockPos)) {
                 connectionTag.putBoolean(IS_OWNER_TAG_NAME, true);
             }
             connections.add(connectionTag);
-        }
+        });
         tag.put(CONNECTIONS_TAG_NAME, connections);
 
         return tag;
@@ -246,11 +254,11 @@ public final class NetworkConnectorTileEntity extends AbstractTileEntity impleme
         final ListNBT connections = tag.getList(CONNECTIONS_TAG_NAME, NBTTagIds.TAG_COMPOUND);
         for (int i = 0; i < Math.min(connections.size(), MAX_CONNECTION_COUNT); i++) {
             final CompoundNBT connectionTag = connections.getCompound(i);
-            final BlockPos position = NBTUtil.readBlockPos(connectionTag);
-            connectorPositions.add(position);
-            dirtyConnectors.add(position);
+            final CableConnection conn = CableConnection.load(connectionTag);
+            cableConnections.put(conn.blockPos, conn.color);
+            dirtyConnectors.add(conn.blockPos);
             if (connectionTag.getBoolean(IS_OWNER_TAG_NAME)) {
-                ownedCables.add(position);
+                ownedCables.add(conn.blockPos);
             }
         }
     }
@@ -259,7 +267,7 @@ public final class NetworkConnectorTileEntity extends AbstractTileEntity impleme
     protected void loadClient() {
         super.loadClient();
 
-        NetworkCableRenderer.addNetworkConnector(this);
+        HangingCableRenderer.addNetworkConnector(this);
     }
 
     @Override
@@ -285,7 +293,7 @@ public final class NetworkConnectorTileEntity extends AbstractTileEntity impleme
         final BlockPos pos = getBlockPos();
         for (final NetworkConnectorTileEntity connector : connectors.values()) {
             connector.connectors.remove(pos);
-            if (connector.connectorPositions.contains(pos)) {
+            if (connector.cableConnections.containsKey(pos)) {
                 connector.dirtyConnectors.add(pos);
             }
         }

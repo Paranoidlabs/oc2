@@ -2,7 +2,7 @@ package li.cil.oc2.client.renderer;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
-import li.cil.oc2.common.tileentity.NetworkConnectorTileEntity;
+import li.cil.oc2.common.tileentity.CableConnectorTileEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ActiveRenderInfo;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
@@ -36,7 +36,7 @@ import java.util.function.Predicate;
 // fall back to letting the TESRs trigger the cable rendering. We still use the data
 // structures with precomputed data and such, it's just that they need much larger
 // render bounds and require an addition hash map look-up.
-public final class NetworkCableRenderer {
+public final class HangingCableRenderer {
     private static final int MAX_RENDER_DISTANCE = 100;
     private static final int CABLE_VERTEX_COUNT = 9;
     private static final float CABLE_THICKNESS = 0.025f;
@@ -46,24 +46,26 @@ public final class NetworkCableRenderer {
     private static final float CABLE_HANG_MIN = 0.1f;
     private static final float CABLE_HANG_MAX = 0.5f;
     private static final float CABLE_MAX_LENGTH = 8f;
-    private static final Vector3f CABLE_COLOR = new Vector3f(0.0f, 0.33f, 0.4f);
 
-    private static final Set<NetworkConnectorTileEntity> connectors = Collections.newSetFromMap(new WeakHashMap<>());
+    // TODO: Move this ... where?
+    public static final Vector3f CABLE_COLOR = new Vector3f(0.0f, 0.33f, 0.4f);
+
+    private static final Set<CableConnectorTileEntity> connectors = Collections.newSetFromMap(new WeakHashMap<>());
     private static int lastKnownConnectorCount;
     private static boolean isDirty;
 
     private static final ArrayList<Connection> connections = new ArrayList<>();
-    private static final WeakHashMap<NetworkConnectorTileEntity, ArrayList<Connection>> connectionsByConnector = new WeakHashMap<>();
+    private static final WeakHashMap<CableConnectorTileEntity, ArrayList<Connection>> connectionsByConnector = new WeakHashMap<>();
 
     ///////////////////////////////////////////////////////////////////
 
     public static void initialize() {
-        MinecraftForge.EVENT_BUS.addListener(NetworkCableRenderer::handleRenderWorld);
-        MinecraftForge.EVENT_BUS.addListener(NetworkCableRenderer::handleChunkUnloadEvent);
-        MinecraftForge.EVENT_BUS.addListener(NetworkCableRenderer::handleWorldUnloadEvent);
+        MinecraftForge.EVENT_BUS.addListener(HangingCableRenderer::handleRenderWorld);
+        MinecraftForge.EVENT_BUS.addListener(HangingCableRenderer::handleChunkUnloadEvent);
+        MinecraftForge.EVENT_BUS.addListener(HangingCableRenderer::handleWorldUnloadEvent);
     }
 
-    public static void addNetworkConnector(final NetworkConnectorTileEntity connector) {
+    public static void addNetworkConnector(final CableConnectorTileEntity connector) {
         connectors.add(connector);
         invalidateConnections();
     }
@@ -72,7 +74,7 @@ public final class NetworkCableRenderer {
         isDirty = true;
     }
 
-    public static void renderCablesFor(final IBlockDisplayReader world, final MatrixStack matrixStack, final Vector3d eye, final NetworkConnectorTileEntity connector) {
+    public static void renderCablesFor(final IBlockDisplayReader world, final MatrixStack matrixStack, final Vector3d eye, final CableConnectorTileEntity connector) {
         final ArrayList<Connection> connections = connectionsByConnector.get(connector);
         if (connections != null) {
             renderCables(world, matrixStack, eye, connections, unused -> true);
@@ -85,8 +87,8 @@ public final class NetworkCableRenderer {
         if (event.getWorld().isClientSide()) {
             final ChunkPos chunkPos = event.getChunk().getPos();
 
-            final ArrayList<NetworkConnectorTileEntity> list = new ArrayList<>(NetworkCableRenderer.connectors);
-            for (final NetworkConnectorTileEntity connector : list) {
+            final ArrayList<CableConnectorTileEntity> list = new ArrayList<>(HangingCableRenderer.connectors);
+            for (final CableConnectorTileEntity connector : list) {
                 final ChunkPos connectorChunkPos = new ChunkPos(connector.getBlockPos());
                 if (Objects.equals(connectorChunkPos, chunkPos)) {
                     connectors.remove(connector);
@@ -101,8 +103,8 @@ public final class NetworkCableRenderer {
         if (event.getWorld().isClientSide()) {
             final IWorld world = event.getWorld();
 
-            final ArrayList<NetworkConnectorTileEntity> list = new ArrayList<>(NetworkCableRenderer.connectors);
-            for (final NetworkConnectorTileEntity connector : list) {
+            final ArrayList<CableConnectorTileEntity> list = new ArrayList<>(HangingCableRenderer.connectors);
+            for (final CableConnectorTileEntity connector : list) {
                 if (connector.getLevel() == world) {
                     connectors.remove(connector);
                 }
@@ -152,13 +154,14 @@ public final class NetworkCableRenderer {
         final RenderType renderType = CustomRenderType.getNetworkCable();
         final IRenderTypeBuffer.Impl bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
 
-        final float r = CABLE_COLOR.x();
-        final float g = CABLE_COLOR.y();
-        final float b = CABLE_COLOR.z();
 
         for (final Connection connection : connections) {
             final Vector3d p0 = connection.from;
             final Vector3d p1 = connection.to;
+
+            final float r = connection.color.x();
+            final float g = connection.color.y();
+            final float b = connection.color.z();
 
             if (!p0.closerThan(eye, MAX_RENDER_DISTANCE) && !p1.closerThan(eye, MAX_RENDER_DISTANCE)) {
                 continue;
@@ -244,8 +247,8 @@ public final class NetworkCableRenderer {
     }
 
     private static void validateConnectors() {
-        final ArrayList<NetworkConnectorTileEntity> list = new ArrayList<>(connectors);
-        for (final NetworkConnectorTileEntity connector : list) {
+        final ArrayList<CableConnectorTileEntity> list = new ArrayList<>(connectors);
+        for (final CableConnectorTileEntity connector : list) {
             if (connector.isRemoved()) {
                 connectors.remove(connector);
                 connectionsByConnector.remove(connector);
@@ -271,10 +274,10 @@ public final class NetworkCableRenderer {
         connectionsByConnector.clear();
 
         final HashSet<Connection> seen = new HashSet<>();
-        for (final NetworkConnectorTileEntity connector : connectors) {
+        for (final CableConnectorTileEntity connector : connectors) {
             final BlockPos position = connector.getBlockPos();
-            for (final BlockPos connectedPosition : connector.getConnectedPositions()) {
-                final Connection connection = new Connection(position, connectedPosition);
+            for (final CableConnectorTileEntity.CableConnection connectedPosition : connector.getConnected()) {
+                final Connection connection = new Connection(position, connectedPosition.blockPos, connectedPosition.color);
                 if (seen.add(connection)) {
                     connections.add(connection);
                     connectionsByConnector.computeIfAbsent(connector, unused -> new ArrayList<>()).add(connection);
@@ -291,8 +294,13 @@ public final class NetworkCableRenderer {
         public final BlockPos fromPos, toPos;
         public final Vector3d from, to, forward, right;
         public final AxisAlignedBB bounds;
+        public final Vector3f color;
 
         private Connection(final BlockPos fromPos, final BlockPos toPos) {
+            this(fromPos, toPos, CABLE_COLOR);
+        }
+
+        private Connection(final BlockPos fromPos, final BlockPos toPos, final Vector3f color) {
             if (fromPos.compareTo(toPos) > 0) {
                 this.fromPos = toPos;
                 this.toPos = fromPos;
@@ -300,6 +308,8 @@ public final class NetworkCableRenderer {
                 this.fromPos = fromPos;
                 this.toPos = toPos;
             }
+
+            this.color = color;
 
             from = Vector3d.atCenterOf(fromPos);
             to = Vector3d.atCenterOf(toPos);

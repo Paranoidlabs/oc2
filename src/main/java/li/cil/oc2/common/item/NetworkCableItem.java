@@ -3,19 +3,23 @@ package li.cil.oc2.common.item;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.tileentity.NetworkConnectorTileEntity;
 import li.cil.oc2.common.tileentity.NetworkConnectorTileEntity.ConnectionResult;
+import net.minecraft.command.arguments.NBTCompoundTagArgument;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUseContext;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.vector.Vector3f;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
 
 import java.util.Objects;
+import java.util.Optional;
 import java.util.WeakHashMap;
 
 public final class NetworkCableItem extends ModItem {
@@ -34,6 +38,24 @@ public final class NetworkCableItem extends ModItem {
         }
 
         return super.use(world, player, hand);
+    }
+
+    private static Optional<Vector3f> getColor(ItemStack stack) {
+        if (stack.hasTag()) {
+            final CompoundNBT tag = stack.getTag();
+
+            assert tag != null;
+            if (tag.contains("r") && tag.contains("g") && tag.contains("b")) {
+                final float r = tag.getFloat("r");
+                final float g = tag.getFloat("g");
+                final float b = tag.getFloat("b");
+
+                return Optional.of(new Vector3f(r, g, b));
+
+            }
+        }
+
+        return Optional.empty();
     }
 
     @Override
@@ -74,7 +96,12 @@ public final class NetworkCableItem extends ModItem {
                 final NetworkConnectorTileEntity connectorA = (NetworkConnectorTileEntity) startTileEntity;
                 final NetworkConnectorTileEntity connectorB = (NetworkConnectorTileEntity) currentTileEntity;
 
-                final ConnectionResult connectionResult = NetworkConnectorTileEntity.connect(connectorA, connectorB);
+                final Optional<Vector3f> color = getColor(stack);
+                final ConnectionResult connectionResult;
+                connectionResult = color
+                        .map(it -> NetworkConnectorTileEntity.connect(connectorA, connectorB, it))
+                        .orElseGet(() -> NetworkConnectorTileEntity.connect(connectorA, connectorB));
+
                 switch (connectionResult) {
                     case SUCCESS:
                         if (!player.isCreative()) {
