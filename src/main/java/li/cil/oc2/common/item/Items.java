@@ -30,6 +30,7 @@ public final class Items {
     public static final RegistryObject<Item> DISK_DRIVE = register(Blocks.DISK_DRIVE);
     public static final RegistryObject<Item> CHARGER = register(Blocks.CHARGER, ChargerItem::new);
     public static final RegistryObject<Item> CREATIVE_ENERGY = register(Blocks.CREATIVE_ENERGY);
+    public static final RegistryObject<Item> TAP = register(Blocks.TAP);
 
     ///////////////////////////////////////////////////////////////////
 

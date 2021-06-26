@@ -39,6 +39,7 @@ public class ModBlockStateProvider extends BlockStateProvider {
         horizontalBlock(Blocks.NETWORK_HUB, Items.NETWORK_HUB);
         horizontalBlock(Blocks.DISK_DRIVE, Items.DISK_DRIVE);
         horizontalBlock(Blocks.CHARGER, Items.CHARGER);
+        horizontalBlock(Blocks.TAP, Items.TAP);
         simpleBlock(Blocks.CREATIVE_ENERGY, Items.CREATIVE_ENERGY);
 
         registerCableStates();

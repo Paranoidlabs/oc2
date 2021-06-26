@@ -25,6 +25,7 @@ public final class TileEntities {
     public static final RegistryObject<TileEntityType<DiskDriveTileEntity>> DISK_DRIVE_TILE_ENTITY = register(Blocks.DISK_DRIVE, DiskDriveTileEntity::new);
     public static final RegistryObject<TileEntityType<ChargerTileEntity>> CHARGER_TILE_ENTITY = register(Blocks.CHARGER, ChargerTileEntity::new);
     public static final RegistryObject<TileEntityType<CreativeEnergyTileEntity>> CREATIVE_ENERGY_TILE_ENTITY = register(Blocks.CREATIVE_ENERGY, CreativeEnergyTileEntity::new);
+    public static final RegistryObject<TileEntityType<TapTileEntity>> TAP_TILE_ENTITY = register(Blocks.TAP, TapTileEntity::new);
 
     ///////////////////////////////////////////////////////////////////
 

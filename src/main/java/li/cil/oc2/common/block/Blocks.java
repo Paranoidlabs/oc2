@@ -20,6 +20,7 @@ public final class Blocks {
     public static final RegistryObject<DiskDriveBlock> DISK_DRIVE = BLOCKS.register("disk_drive", DiskDriveBlock::new);
     public static final RegistryObject<ChargerBlock> CHARGER = BLOCKS.register("charger", ChargerBlock::new);
     public static final RegistryObject<CreativeEnergyBlock> CREATIVE_ENERGY = BLOCKS.register("creative_energy", CreativeEnergyBlock::new);
+    public static final RegistryObject<TapBlock> TAP = BLOCKS.register("tap", TapBlock::new);
 
     ///////////////////////////////////////////////////////////////////
 
