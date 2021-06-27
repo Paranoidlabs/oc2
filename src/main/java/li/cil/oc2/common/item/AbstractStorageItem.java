@@ -55,4 +55,6 @@ public abstract class AbstractStorageItem extends ModItem {
                 .append(TextFormatUtils.formatSize(capacity))
                 .append(")");
     }
+
+    public abstract int getMaxCapacity();
 }

@@ -1,5 +1,6 @@
 package li.cil.oc2.common.item;
 
+import li.cil.oc2.common.Config;
 import net.minecraft.item.DyeColor;
 import net.minecraft.item.IDyeableArmorItem;
 import net.minecraft.item.ItemStack;
@@ -26,5 +27,10 @@ public final class HardDriveItem extends AbstractStorageItem implements IDyeable
     @Override
     protected String getOrCreateDescriptionId() {
         return "item.oc2.hard_drive";
+    }
+
+    @Override
+    public int getMaxCapacity() {
+        return Config.maxHardDriveSize;
     }
 }

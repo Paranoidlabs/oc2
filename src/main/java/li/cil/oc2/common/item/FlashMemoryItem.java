@@ -1,6 +1,7 @@
 package li.cil.oc2.common.item;
 
 import li.cil.oc2.api.API;
+import li.cil.oc2.common.Config;
 import li.cil.oc2.common.bus.device.item.ByteBufferFlashMemoryVMDevice;
 import li.cil.oc2.common.util.NBTTagIds;
 import net.minecraft.item.ItemStack;
@@ -30,5 +31,10 @@ public final class FlashMemoryItem extends AbstractStorageItem {
     @Override
     protected String getOrCreateDescriptionId() {
         return "item.oc2.flash_memory";
+    }
+
+    @Override
+    public int getMaxCapacity() {
+        return Config.maxFlashMemorySize;
     }
 }
