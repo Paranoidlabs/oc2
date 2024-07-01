@@ -30,7 +30,8 @@ public final class ModBlockStateProvider extends BlockStateProvider {
     private static final ResourceLocation NETWORK_HUB_MODEL = new ResourceLocation(API.MOD_ID, "block/network_hub");
     private static final ResourceLocation PROJECTOR_MODEL = new ResourceLocation(API.MOD_ID, "block/projector");
     private static final ResourceLocation REDSTONE_INTERFACE_MODEL = new ResourceLocation(API.MOD_ID, "block/redstone_interface");
-    //private static final ResourceLocation PCI_CARD_CAGE_MODEL = new ResourceLocation(API.MOD_ID, "block/pci_card_cage");
+    private static final ResourceLocation VXLAN_HUB_MODEL = new ResourceLocation(API.MOD_ID, "block/vxlan_hub");
+    private static final ResourceLocation PCI_CARD_CAGE_MODEL = new ResourceLocation(API.MOD_ID, "block/pci_card_cage");
 
 
     public ModBlockStateProvider(final PackOutput output, final ExistingFileHelper existingFileHelper) {
@@ -59,10 +60,11 @@ public final class ModBlockStateProvider extends BlockStateProvider {
             .end()
             .end();
         horizontalBlock(Blocks.NETWORK_HUB, Items.NETWORK_HUB, NETWORK_HUB_MODEL);
-        //horizontalBlock(Blocks.NETWORK_SWITCH, Items.NETWORK_SWITCH, NETWORK_HUB_MODEL);
+        horizontalBlock(Blocks.NETWORK_SWITCH, Items.NETWORK_SWITCH, NETWORK_HUB_MODEL);
         horizontalBlock(Blocks.PROJECTOR, Items.PROJECTOR, PROJECTOR_MODEL);
         horizontalBlock(Blocks.REDSTONE_INTERFACE, Items.REDSTONE_INTERFACE, REDSTONE_INTERFACE_MODEL);
-        //horizontalBlock(Blocks.PCI_CARD_CAGE, Items.PCI_CARD_CAGE, PCI_CARD_CAGE_MODEL);
+        horizontalBlock(Blocks.VXLAN_HUB, Items.VXLAN_HUB, VXLAN_HUB_MODEL);
+        horizontalBlock(Blocks.PCI_CARD_CAGE, Items.PCI_CARD_CAGE, PCI_CARD_CAGE_MODEL);
 
         registerCableStates();
     }

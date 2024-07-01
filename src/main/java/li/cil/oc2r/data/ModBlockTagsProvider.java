@@ -39,7 +39,9 @@ public final class ModBlockTagsProvider extends BlockTagsProvider {
             REDSTONE_INTERFACE.get(),
             DISK_DRIVE.get(),
             CHARGER.get(),
-            PROJECTOR.get()
+            PROJECTOR.get(),
+            VXLAN_HUB.get(),
+            PCI_CARD_CAGE.get()
         );
     }
 }
