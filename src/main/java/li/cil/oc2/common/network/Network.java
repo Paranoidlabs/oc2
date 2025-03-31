@@ -32,82 +32,114 @@ public final class Network {
         registrar.play(BusCableFacadeMessage.ID, BusCableFacadeMessage::new, handler -> handler
                 .client(ClientPayloadHandler.getInstance()::handle)
                 .server(ServerPayloadHandler.getInstance()::handle));
-        registrar.play(ComputerBootErrorMessage.ID, ComputerBootErrorMessage::new, handler -> handler
-                .client(ClientPayloadHandler.getInstance()::handle)
-                .server(ServerPayloadHandler.getInstance()::handle));
         registrar.play(BusInterfaceNameMessage.ID, BusInterfaceNameMessage::new, handler -> handler
                 .client(ClientPayloadHandler.getInstance()::handle)
                 .server(ServerPayloadHandler.getInstance()::handle));
         registrar.play(ClientCanceledImportFileMessage.ID, ClientCanceledImportFileMessage::new, handler -> handler
                 .client(ClientPayloadHandler.getInstance()::handle)
                 .server(ServerPayloadHandler.getInstance()::handle));
-        registrar.play(ComputerTerminalBlockMessage.ID, ComputerTerminalBlockMessage::new, handler -> handler
+        registrar.play(ComputerBootErrorMessage.ID, ComputerBootErrorMessage::new, handler -> handler
                 .client(ClientPayloadHandler.getInstance()::handle)
                 .server(ServerPayloadHandler.getInstance()::handle));
-        registrar.play(RobotTerminalMessage.ID, RobotTerminalMessage::new, handler -> handler
+        registrar.play(ComputerBusStateMessage.ID, ComputerBusStateMessage::new, handler -> handler
+                .client(ClientPayloadHandler.getInstance()::handle)
+                .server(ServerPayloadHandler.getInstance()::handle));
+        registrar.play(ComputerPowerMessage.ID, ComputerPowerMessage::new, handler -> handler
+                .client(ClientPayloadHandler.getInstance()::handle)
+                .server(ServerPayloadHandler.getInstance()::handle));
+        registrar.play(ComputerRunStateMessage.ID, ComputerRunStateMessage::new, handler -> handler
+                .client(ClientPayloadHandler.getInstance()::handle)
+                .server(ServerPayloadHandler.getInstance()::handle));
+        registrar.play(ComputerTerminalBlockMessage.ID, ComputerTerminalBlockMessage::new, handler -> handler
                 .client(ClientPayloadHandler.getInstance()::handle)
                 .server(ServerPayloadHandler.getInstance()::handle));
         registrar.play(DiskDriveFloppyMessage.ID, DiskDriveFloppyMessage::new, handler -> handler
                 .client(ClientPayloadHandler.getInstance()::handle)
                 .server(ServerPayloadHandler.getInstance()::handle));
-
-        /*
-        registerMessage(ComputerTerminalOutputMessage.class, ComputerTerminalOutputMessage::new, NetworkDirection.PLAY_TO_CLIENT);
-        registerMessage(ComputerTerminalInputMessage.class, ComputerTerminalInputMessage::new, NetworkDirection.PLAY_TO_SERVER);
-        registerMessage(ComputerRunStateMessage.class, ComputerRunStateMessage::new, NetworkDirection.PLAY_TO_CLIENT);
-        registerMessage(ComputerBusStateMessage.class, ComputerBusStateMessage::new, NetworkDirection.PLAY_TO_CLIENT);
-        registerMessage(ComputerBootErrorMessage.class, ComputerBootErrorMessage::new, NetworkDirection.PLAY_TO_CLIENT);
-        registerMessage(ComputerPowerMessage.class, ComputerPowerMessage::new, NetworkDirection.PLAY_TO_SERVER);
-        registerMessage(MonitorPowerMessage.class, MonitorPowerMessage::new, NetworkDirection.PLAY_TO_SERVER);
-        registerMessage(MonitorPowerMessageForwarded.class, MonitorPowerMessageForwarded::new, NetworkDirection.PLAY_TO_CLIENT);
-        registerMessage(OpenComputerInventoryMessage.class, OpenComputerInventoryMessage::new, NetworkDirection.PLAY_TO_SERVER);
-        registerMessage(OpenComputerTerminalMessage.class, OpenComputerTerminalMessage::new, NetworkDirection.PLAY_TO_SERVER);
-
-        registerMessage(NetworkConnectorConnectionsMessage.class, NetworkConnectorConnectionsMessage::new, NetworkDirection.PLAY_TO_CLIENT);
-
-        registerMessage(RobotTerminalOutputMessage.class, RobotTerminalOutputMessage::new, NetworkDirection.PLAY_TO_CLIENT);
-        registerMessage(RobotTerminalInputMessage.class, RobotTerminalInputMessage::new, NetworkDirection.PLAY_TO_SERVER);
-        registerMessage(RobotRunStateMessage.class, RobotRunStateMessage::new, NetworkDirection.PLAY_TO_CLIENT);
-        registerMessage(RobotBusStateMessage.class, RobotBusStateMessage::new, NetworkDirection.PLAY_TO_CLIENT);
-        registerMessage(RobotBootErrorMessage.class, RobotBootErrorMessage::new, NetworkDirection.PLAY_TO_CLIENT);
-        registerMessage(RobotPowerMessage.class, RobotPowerMessage::new, NetworkDirection.PLAY_TO_SERVER);
-        registerMessage(RobotInitializationRequestMessage.class, RobotInitializationRequestMessage::new, NetworkDirection.PLAY_TO_SERVER);
-        registerMessage(RobotInitializationMessage.class, RobotInitializationMessage::new, NetworkDirection.PLAY_TO_CLIENT);
-        registerMessage(OpenRobotInventoryMessage.class, OpenRobotInventoryMessage::new, NetworkDirection.PLAY_TO_SERVER);
-        registerMessage(OpenRobotTerminalMessage.class, OpenRobotTerminalMessage::new, NetworkDirection.PLAY_TO_SERVER);
-
-        registerMessage(DiskDriveFloppyMessage.class, DiskDriveFloppyMessage::new, NetworkDirection.PLAY_TO_CLIENT);
-        registerMessage(FirmwareFlasherMessage.class, FirmwareFlasherMessage::new, NetworkDirection.PLAY_TO_CLIENT);
-
-
-        registerMessage(ExportedFileMessage.class, ExportedFileMessage::new, NetworkDirection.PLAY_TO_CLIENT);
-        registerMessage(RequestImportedFileMessage.class, RequestImportedFileMessage::new, NetworkDirection.PLAY_TO_CLIENT);
-        registerMessage(ImportedFileMessage.class, ImportedFileMessage::new, NetworkDirection.PLAY_TO_SERVER);
-        registerMessage(ServerCanceledImportFileMessage.class, ServerCanceledImportFileMessage::new, NetworkDirection.PLAY_TO_CLIENT);
-        registerMessage(ClientCanceledImportFileMessage.class, ClientCanceledImportFileMessage::new, NetworkDirection.PLAY_TO_SERVER);
-
-        registerMessage(BusCableFacadeMessage.class, BusCableFacadeMessage::new, NetworkDirection.PLAY_TO_CLIENT);
-
-        registerMessage(NetworkInterfaceCardConfigurationMessage.class, NetworkInterfaceCardConfigurationMessage::new, NetworkDirection.PLAY_TO_SERVER);
-        registerMessage(NetworkTunnelLinkMessage.class, NetworkTunnelLinkMessage::new, NetworkDirection.PLAY_TO_SERVER);
-
-        registerMessage(MonitorRequestFramebufferMessage.class, MonitorRequestFramebufferMessage::new, NetworkDirection.PLAY_TO_SERVER);
-        registerMessage(MonitorFramebufferMessage.class, MonitorFramebufferMessage::new, NetworkDirection.PLAY_TO_CLIENT);
-
-        registerMessage(ProjectorRequestFramebufferMessage.class, ProjectorRequestFramebufferMessage::new, NetworkDirection.PLAY_TO_SERVER);
-        registerMessage(ProjectorFramebufferMessage.class, ProjectorFramebufferMessage::new, NetworkDirection.PLAY_TO_CLIENT);
-        registerMessage(ProjectorStateMessage.class, ProjectorStateMessage::new, NetworkDirection.PLAY_TO_CLIENT);
-        registerMessage(MonitorStateMessage.class, MonitorStateMessage::new, NetworkDirection.PLAY_TO_CLIENT);
-
-        registerMessage(KeyboardInputMessage.class, KeyboardInputMessage::new, NetworkDirection.PLAY_TO_SERVER);
-
-        registerMessage(MonitorInputMessage.class, MonitorInputMessage::new, NetworkDirection.PLAY_TO_SERVER);
-
-        registerMessage(MultipartMessage.class, MultipartMessage::new, NetworkDirection.PLAY_TO_SERVER);
-
-        MultipartMessage.registerMessage(ImportedFileMessage.class, ImportedFileMessage::new);
-
-         */
+        registrar.play(ExportedFileMessage.ID, ExportedFileMessage::new, handler -> handler
+                .client(ClientPayloadHandler.getInstance()::handle)
+                .server(ServerPayloadHandler.getInstance()::handle));
+        registrar.play(FirmwareFlasherMessage.ID, FirmwareFlasherMessage::new, handler -> handler
+                .client(ClientPayloadHandler.getInstance()::handle)
+                .server(ServerPayloadHandler.getInstance()::handle));
+        registrar.play(ImportedFileMessage.ID, ImportedFileMessage::new, handler -> handler
+                .client(ClientPayloadHandler.getInstance()::handle)
+                .server(ServerPayloadHandler.getInstance()::handle));
+        registrar.play(KeyboardInputMessage.ID, KeyboardInputMessage::new, handler -> handler
+                .client(ClientPayloadHandler.getInstance()::handle)
+                .server(ServerPayloadHandler.getInstance()::handle));
+        registrar.play(MonitorFramebufferMessage.ID, MonitorFramebufferMessage::new, handler -> handler
+                .client(ClientPayloadHandler.getInstance()::handle)
+                .server(ServerPayloadHandler.getInstance()::handle));
+        registrar.play(MonitorInputMessage.ID, MonitorInputMessage::new, handler -> handler
+                .client(ClientPayloadHandler.getInstance()::handle)
+                .server(ServerPayloadHandler.getInstance()::handle));
+        registrar.play(MonitorPowerMessage.ID, MonitorPowerMessage::new, handler -> handler
+                .client(ClientPayloadHandler.getInstance()::handle)
+                .server(ServerPayloadHandler.getInstance()::handle));
+        registrar.play(MonitorPowerMessageForwarded.ID, MonitorPowerMessageForwarded::new, handler -> handler
+                .client(ClientPayloadHandler.getInstance()::handle)
+                .server(ServerPayloadHandler.getInstance()::handle));
+        registrar.play(MonitorRequestFramebufferMessage.ID, MonitorRequestFramebufferMessage::new, handler -> handler
+                .client(ClientPayloadHandler.getInstance()::handle)
+                .server(ServerPayloadHandler.getInstance()::handle));
+        registrar.play(MonitorStateMessage.ID, MonitorStateMessage::new, handler -> handler
+                .client(ClientPayloadHandler.getInstance()::handle)
+                .server(ServerPayloadHandler.getInstance()::handle));
+        registrar.play(NetworkConnectorConnectionsMessage.ID, NetworkConnectorConnectionsMessage::new, handler -> handler
+                .client(ClientPayloadHandler.getInstance()::handle)
+                .server(ServerPayloadHandler.getInstance()::handle));
+        registrar.play(NetworkInterfaceCardConfigurationMessage.ID, NetworkInterfaceCardConfigurationMessage::new, handler -> handler
+                .client(ClientPayloadHandler.getInstance()::handle)
+                .server(ServerPayloadHandler.getInstance()::handle));
+        registrar.play(NetworkTunnelLinkMessage.ID, NetworkTunnelLinkMessage::new, handler -> handler
+                .client(ClientPayloadHandler.getInstance()::handle)
+                .server(ServerPayloadHandler.getInstance()::handle));
+        registrar.play(OpenComputerInventoryMessage.ID, OpenComputerInventoryMessage::new, handler -> handler
+                .client(ClientPayloadHandler.getInstance()::handle)
+                .server(ServerPayloadHandler.getInstance()::handle));
+        registrar.play(OpenComputerTerminalMessage.ID, OpenComputerTerminalMessage::new, handler -> handler
+                .client(ClientPayloadHandler.getInstance()::handle)
+                .server(ServerPayloadHandler.getInstance()::handle));
+        registrar.play(OpenRobotInventoryMessage.ID, OpenRobotInventoryMessage::new, handler -> handler
+                .client(ClientPayloadHandler.getInstance()::handle)
+                .server(ServerPayloadHandler.getInstance()::handle));
+        registrar.play(OpenRobotTerminalMessage.ID, OpenRobotTerminalMessage::new, handler -> handler
+                .client(ClientPayloadHandler.getInstance()::handle)
+                .server(ServerPayloadHandler.getInstance()::handle));
+        registrar.play(ProjectorFramebufferMessage.ID, ProjectorFramebufferMessage::new, handler -> handler
+                .client(ClientPayloadHandler.getInstance()::handle)
+                .server(ServerPayloadHandler.getInstance()::handle));
+        registrar.play(ProjectorRequestFramebufferMessage.ID, ProjectorRequestFramebufferMessage::new, handler -> handler
+                .client(ClientPayloadHandler.getInstance()::handle)
+                .server(ServerPayloadHandler.getInstance()::handle));
+        registrar.play(ProjectorStateMessage.ID, ProjectorStateMessage::new, handler -> handler
+                .client(ClientPayloadHandler.getInstance()::handle)
+                .server(ServerPayloadHandler.getInstance()::handle));
+        registrar.play(RequestImportedFileMessage.ID, RequestImportedFileMessage::new, handler -> handler
+                .client(ClientPayloadHandler.getInstance()::handle)
+                .server(ServerPayloadHandler.getInstance()::handle));
+        registrar.play(RobotBootErrorMessage.ID, RobotBootErrorMessage::new, handler -> handler
+                .client(ClientPayloadHandler.getInstance()::handle)
+                .server(ServerPayloadHandler.getInstance()::handle));
+        registrar.play(RobotBusStateMessage.ID, RobotBusStateMessage::new, handler -> handler
+                .client(ClientPayloadHandler.getInstance()::handle)
+                .server(ServerPayloadHandler.getInstance()::handle));
+        registrar.play(RobotInitializationMessage.ID, RobotInitializationMessage::new, handler -> handler
+                .client(ClientPayloadHandler.getInstance()::handle)
+                .server(ServerPayloadHandler.getInstance()::handle));
+        registrar.play(RobotPowerMessage.ID, RobotPowerMessage::new, handler -> handler
+                .client(ClientPayloadHandler.getInstance()::handle)
+                .server(ServerPayloadHandler.getInstance()::handle));
+        registrar.play(RobotRunStateMessage.ID, RobotRunStateMessage::new, handler -> handler
+                .client(ClientPayloadHandler.getInstance()::handle)
+                .server(ServerPayloadHandler.getInstance()::handle));
+        registrar.play(RobotTerminalMessage.ID, RobotTerminalMessage::new, handler -> handler
+                .client(ClientPayloadHandler.getInstance()::handle)
+                .server(ServerPayloadHandler.getInstance()::handle));
+        registrar.play(ServerCanceledImportFileMessage.ID, ServerCanceledImportFileMessage::new, handler -> handler
+                .client(ClientPayloadHandler.getInstance()::handle)
+                .server(ServerPayloadHandler.getInstance()::handle));
     }
 
     // TODO remove this, it's not really all that efficient or sensible

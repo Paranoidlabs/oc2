@@ -2,7 +2,7 @@
 
 package li.cil.oc2.common.network.message;
 
-import li.cil.manual.api.util.Constants;
+import li.cil.oc2.api.API;
 import li.cil.oc2.common.blockentity.NetworkConnectorBlockEntity;
 import li.cil.oc2.common.network.MessageUtils;
 import net.minecraft.core.BlockPos;
@@ -14,7 +14,7 @@ import java.util.ArrayList;
 
 public record NetworkConnectorConnectionsMessage(BlockPos pos, ArrayList<BlockPos> connectedPositions) implements CustomMessage {
 
-    public static final ResourceLocation ID = new ResourceLocation(Constants.MOD_ID, "network_connector_connections");
+    public static final ResourceLocation ID = new ResourceLocation(API.MOD_ID, "network_connector_connections");
     ///////////////////////////////////////////////////////////////////
 
     public NetworkConnectorConnectionsMessage(final NetworkConnectorBlockEntity networkConnector) {

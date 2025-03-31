@@ -2,7 +2,7 @@
 
 package li.cil.oc2.common.network.message;
 
-import li.cil.manual.api.util.Constants;
+import li.cil.oc2.api.API;
 import li.cil.oc2.common.container.NetworkTunnelContainer;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
@@ -12,7 +12,7 @@ import net.neoforged.neoforge.network.handling.PlayPayloadContext;
 
 public record NetworkTunnelLinkMessage(int containerId) implements CustomMessage {
 
-    public static final ResourceLocation ID = new ResourceLocation(Constants.MOD_ID, "network_tunnel_link");
+    public static final ResourceLocation ID = new ResourceLocation(API.MOD_ID, "network_tunnel_link");
 
     public NetworkTunnelLinkMessage(final FriendlyByteBuf buffer) {
         this(buffer.readVarInt());
