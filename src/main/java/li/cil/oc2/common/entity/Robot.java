@@ -14,7 +14,6 @@ import li.cil.oc2.common.Config;
 import li.cil.oc2.common.bus.AbstractDeviceBusElement;
 import li.cil.oc2.common.bus.CommonDeviceBusController;
 import li.cil.oc2.common.bus.device.util.Devices;
-import li.cil.oc2.common.capabilities.Capabilities;
 import li.cil.oc2.common.container.FixedSizeItemStackHandler;
 import li.cil.oc2.common.container.RobotInventoryContainer;
 import li.cil.oc2.common.container.RobotTerminalContainer;
@@ -65,16 +64,13 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ICapabilityProvider;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.event.level.ChunkEvent;
-import net.minecraftforge.event.level.LevelEvent;
-import net.minecraftforge.items.ItemStackHandler;
-import net.minecraftforge.network.NetworkHooks;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.bus.EventBus;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.event.level.ChunkEvent;
+import net.neoforged.neoforge.event.level.LevelEvent;
+import net.neoforged.neoforge.items.ItemStackHandler;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -171,36 +167,6 @@ public final class Robot extends Entity implements li.cil.oc2.api.capabilities.R
         getEntityData().set(SELECTED_SLOT, (byte) Mth.clamp(value, 0, INVENTORY_SIZE - 1));
     }
 
-    @Nonnull
-    @Override
-    public <T> LazyOptional<T> getCapability(final Capability<T> capability, @Nullable final Direction side) {
-        if (capability == Capabilities.itemHandler()) {
-            return LazyOptional.of(() -> inventory).cast();
-        }
-        if (capability == Capabilities.energyStorage() && Config.robotsUseEnergy()) {
-            return LazyOptional.of(() -> energy).cast();
-        }
-        if (capability == Capabilities.robot()) {
-            return LazyOptional.of(() -> this).cast();
-        }
-
-        final LazyOptional<T> optional = super.getCapability(capability, side);
-        if (optional.isPresent()) {
-            return optional;
-        }
-
-        for (final Device device : virtualMachine.busController.getDevices()) {
-            if (device instanceof final ICapabilityProvider capabilityProvider) {
-                final LazyOptional<T> value = capabilityProvider.getCapability(capability, side);
-                if (value.isPresent()) {
-                    return value;
-                }
-            }
-        }
-
-        return LazyOptional.empty();
-    }
-
     public long getLastPistonMovement() {
         return lastPistonMovement;
     }
@@ -259,7 +225,7 @@ public final class Robot extends Entity implements li.cil.oc2.api.capabilities.R
             if (isClient) {
                 requestInitialState();
             } else {
-                registerListeners();
+                //registerListeners();
                 RobotActions.initializeData(this);
                 if (actionProcessor.action != null) {
                     actionProcessor.action.initialize(this);
@@ -343,14 +309,16 @@ public final class Robot extends Entity implements li.cil.oc2.api.capabilities.R
         return InteractionResult.sidedSuccess(level().isClientSide());
     }
 
+    /*
     @Override
     public Packet<ClientGamePacketListener> getAddEntityPacket() {
         return NetworkHooks.getEntitySpawningPacket(this);
     }
+     */
 
     @Override
-    public void setRemoved(final RemovalReason reason) {
-        super.setRemoved(reason);
+    public void remove(final RemovalReason reason) {
+        super.remove(reason);
 
         if (!level().isClientSide()) {
             // Full unload to release out-of-nbt persisted runtime-only data such as ram.
@@ -461,17 +429,17 @@ public final class Robot extends Entity implements li.cil.oc2.api.capabilities.R
 
     @OnlyIn(Dist.CLIENT)
     private void requestInitialState() {
-        Network.sendToServer(new RobotInitializationRequestMessage(this));
+        Network.sendToServer(new RobotInitializationMessage(this));
     }
 
-    private void registerListeners() {
-        MinecraftForge.EVENT_BUS.addListener(chunkUnloadListener);
-        MinecraftForge.EVENT_BUS.addListener(worldUnloadListener);
+    private void registerListeners(IEventBus modEventBus) {
+        modEventBus.addListener(chunkUnloadListener);
+        modEventBus.addListener(worldUnloadListener);
     }
 
-    private void unregisterListeners() {
-        MinecraftForge.EVENT_BUS.unregister(chunkUnloadListener);
-        MinecraftForge.EVENT_BUS.unregister(worldUnloadListener);
+    private void unregisterListeners(IEventBus modEventBus) {
+        modEventBus.unregister(chunkUnloadListener);
+        modEventBus.unregister(worldUnloadListener);
     }
 
     private void handleChunkUnload(final ChunkEvent.Unload event) {
@@ -484,7 +452,7 @@ public final class Robot extends Entity implements li.cil.oc2.api.capabilities.R
             return;
         }
 
-        unregisterListeners();
+        //unregisterListeners();
         virtualMachine.suspend();
         virtualMachine.dispose();
     }
@@ -494,7 +462,7 @@ public final class Robot extends Entity implements li.cil.oc2.api.capabilities.R
             return;
         }
 
-        unregisterListeners();
+        //unregisterListeners();
         virtualMachine.suspend();
         virtualMachine.dispose();
     }
@@ -737,11 +705,11 @@ public final class Robot extends Entity implements li.cil.oc2.api.capabilities.R
     private final class RobotItemStackHandlers extends AbstractVMItemStackHandlers {
         public RobotItemStackHandlers() {
             super(
-                new GroupDefinition(DeviceTypes.MEMORY, MEMORY_SLOTS),
-                new GroupDefinition(DeviceTypes.HARD_DRIVE, HARD_DRIVE_SLOTS),
-                new GroupDefinition(DeviceTypes.FLASH_MEMORY, FLASH_MEMORY_SLOTS),
-                new GroupDefinition(DeviceTypes.ROBOT_MODULE, MODULE_SLOTS),
-                new GroupDefinition(DeviceTypes.CPU, CPU_SLOTS)
+                new GroupDefinition(DeviceTypes.MEMORY.get(), MEMORY_SLOTS),
+                new GroupDefinition(DeviceTypes.HARD_DRIVE.get(), HARD_DRIVE_SLOTS),
+                new GroupDefinition(DeviceTypes.FLASH_MEMORY.get(), FLASH_MEMORY_SLOTS),
+                new GroupDefinition(DeviceTypes.ROBOT_MODULE.get(), MODULE_SLOTS),
+                new GroupDefinition(DeviceTypes.CPU.get(), CPU_SLOTS)
             );
         }
 
@@ -766,8 +734,8 @@ public final class Robot extends Entity implements li.cil.oc2.api.capabilities.R
         private UUID deviceId = UUID.randomUUID();
 
         @Override
-        public Optional<Collection<LazyOptional<DeviceBusElement>>> getNeighbors() {
-            return Optional.of(singleton(LazyOptional.of(() -> deviceItems.busElement)));
+        public Optional<Collection<DeviceBusElement>> getNeighbors() {
+            return Optional.of(singleton(deviceItems.busElement));
         }
 
         @Override
@@ -803,7 +771,7 @@ public final class Robot extends Entity implements li.cil.oc2.api.capabilities.R
 
         @Override
         protected void sendTerminalUpdateToClient(final ByteBuffer output) {
-            Network.sendToClientsTrackingEntity(new RobotTerminalOutputMessage(Robot.this, output), Robot.this);
+            Network.sendToClientsTrackingEntity(new RobotTerminalMessage(Robot.this.getId(), output.array()), Robot.this);
         }
     }
 
@@ -832,7 +800,7 @@ public final class Robot extends Entity implements li.cil.oc2.api.capabilities.R
             super.stopRunnerAndReset();
 
             TerminalUtils.resetTerminal(terminal, output -> Network.sendToClientsTrackingEntity(
-                new RobotTerminalOutputMessage(Robot.this, output), Robot.this));
+                new RobotTerminalMessage(Robot.this.getId(), output.array()), Robot.this));
 
             actionProcessor.clear();
         }

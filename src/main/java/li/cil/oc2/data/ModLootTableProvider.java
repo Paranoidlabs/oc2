@@ -16,7 +16,7 @@ import net.minecraft.world.level.storage.loot.functions.CopyNbtFunction;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.providers.nbt.ContextNbtProvider;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.neoforge.registries.DeferredHolder;
 
 import java.util.Collections;
 import java.util.List;
@@ -63,7 +63,7 @@ public final class ModLootTableProvider extends LootTableProvider {
             return Blocks.BLOCKS.getEntries()
                 .stream()
                 .filter(blockRegObj -> blockRegObj.get() != Blocks.BUS_CABLE.get())
-                .map(RegistryObject::get)
+                .map(DeferredHolder::get)
                 .collect(Collectors.toList());
         }
 

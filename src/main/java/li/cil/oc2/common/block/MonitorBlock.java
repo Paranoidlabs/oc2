@@ -2,6 +2,7 @@
 
 package li.cil.oc2.common.block;
 
+import com.mojang.serialization.MapCodec;
 import li.cil.oc2.common.Config;
 import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.blockentity.MonitorBlockEntity;
@@ -38,11 +39,13 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
 import javax.annotation.Nullable;
 import java.util.List;
+
+import static li.cil.oc2.common.block.Blocks.MONITOR_CODEC;
 
 public final class MonitorBlock extends HorizontalDirectionalBlock implements EnergyConsumingBlock, EntityBlock {
     public static final BooleanProperty LIT = BlockStateProperties.LIT;
@@ -61,16 +64,20 @@ public final class MonitorBlock extends HorizontalDirectionalBlock implements En
 
     ///////////////////////////////////////////////////////////////////
 
-    public MonitorBlock() {
-        super(Properties
-            .of()
-            .mapColor(MapColor.METAL)
-            .sound(SoundType.METAL)
-            .lightLevel(state -> state.getValue(LIT) ? 8 : 0)
-            .strength(1.5f, 6.0f));
+    public MonitorBlock(Properties properties) {
+        super(properties.lightLevel(MonitorBlock::getLightLevel));
         registerDefaultState(getStateDefinition().any()
             .setValue(FACING, Direction.NORTH)
             .setValue(LIT, false));
+    }
+
+    private static int getLightLevel(final BlockState state) {
+        return (state.getBlock() instanceof MonitorBlock && state.getValue(LIT)) ? 8 : 0;
+    }
+
+    @Override
+    protected MapCodec<? extends HorizontalDirectionalBlock> codec() {
+        return MONITOR_CODEC.get();
     }
 
     ///////////////////////////////////////////////////////////////////
@@ -140,7 +147,6 @@ public final class MonitorBlock extends HorizontalDirectionalBlock implements En
 
     @Override
     protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
-        super.createBlockStateDefinition(builder);
         builder.add(FACING, LIT);
     }
 

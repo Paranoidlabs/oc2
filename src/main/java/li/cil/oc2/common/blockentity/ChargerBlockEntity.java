@@ -6,7 +6,6 @@ import li.cil.oc2.api.bus.device.object.Callback;
 import li.cil.oc2.api.bus.device.object.NamedDevice;
 import li.cil.oc2.common.Config;
 import li.cil.oc2.common.Constants;
-import li.cil.oc2.common.capabilities.Capabilities;
 import li.cil.oc2.common.energy.FixedEnergyStorage;
 import li.cil.oc2.common.util.ChunkUtils;
 import net.minecraft.core.BlockPos;
@@ -18,11 +17,13 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
-import net.minecraftforge.common.capabilities.ICapabilityProvider;
-import net.minecraftforge.energy.IEnergyStorage;
-import net.minecraftforge.items.IItemHandler;
+import net.neoforged.neoforge.capabilities.BlockCapabilityCache;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.capabilities.ICapabilityProvider;
+import net.neoforged.neoforge.energy.IEnergyStorage;
+import net.neoforged.neoforge.items.IItemHandler;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Predicate;
@@ -38,13 +39,11 @@ public final class ChargerBlockEntity extends ModBlockEntity implements NamedDev
 
     private final FixedEnergyStorage energy = new FixedEnergyStorage(Config.chargerEnergyStorage);
     private boolean isCharging;
-    private final AABB renderBoundingBox;
 
     ///////////////////////////////////////////////////////////////////
 
     ChargerBlockEntity(final BlockPos pos, final BlockState state) {
         super(BlockEntities.CHARGER.get(), pos, state);
-        renderBoundingBox = new AABB(pos.above());
     }
 
     ///////////////////////////////////////////////////////////////////
@@ -66,7 +65,6 @@ public final class ChargerBlockEntity extends ModBlockEntity implements NamedDev
 
         isCharging = false;
         chargeBlock();
-        chargeEntities();
 
         if (isCharging) {
             ChunkUtils.setLazyUnsaved(level, getBlockPos());
@@ -99,13 +97,6 @@ public final class ChargerBlockEntity extends ModBlockEntity implements NamedDev
 
     ///////////////////////////////////////////////////////////////////
 
-    @Override
-    protected void collectCapabilities(final CapabilityCollector collector, @Nullable final Direction direction) {
-        collector.offer(Capabilities.energyStorage(), energy);
-    }
-
-    ///////////////////////////////////////////////////////////////////
-
     private void chargeBlock() {
         assert level != null;
 
@@ -113,36 +104,9 @@ public final class ChargerBlockEntity extends ModBlockEntity implements NamedDev
             return;
         }
 
-        final BlockEntity blockEntity = level.getBlockEntity(getBlockPos().above());
-        if (blockEntity != null) {
-            chargeCapabilityProvider(blockEntity);
-        }
-    }
-
-    private void chargeEntities() {
-        assert level != null;
-
-        if (energy.getEnergyStored() == 0) {
-            return;
-        }
-
-        final List<Entity> entities = level.getEntities((Entity) null, new AABB(getBlockPos().above()), ENTITY_PREDICATE);
-        for (final Entity entity : entities) {
-            chargeCapabilityProvider(entity);
-        }
-    }
-
-    private void chargeCapabilityProvider(final ICapabilityProvider capabilityProvider) {
-        capabilityProvider.getCapability(Capabilities.energyStorage(), Direction.DOWN).ifPresent(this::charge);
-        capabilityProvider.getCapability(Capabilities.itemHandler(), Direction.DOWN).ifPresent(this::chargeItems);
-    }
-
-    private void chargeItems(final IItemHandler itemHandler) {
-        for (int slot = 0; slot < itemHandler.getSlots(); slot++) {
-            final ItemStack stack = itemHandler.getStackInSlot(slot);
-            if (!stack.isEmpty()) {
-                stack.getCapability(Capabilities.energyStorage()).ifPresent(this::charge);
-            }
+        IEnergyStorage energyStorage = level.getCapability(Capabilities.EnergyStorage.BLOCK, getBlockPos().above(), Direction.DOWN);
+        if (energyStorage != null) {
+            this.charge(energyStorage);
         }
     }
 
@@ -154,10 +118,5 @@ public final class ChargerBlockEntity extends ModBlockEntity implements NamedDev
         if (energy.extractEnergy(energyStorage.receiveEnergy(amount, simulate), simulate) > 0) {
             isCharging = true;
         }
-    }
-
-    @Override
-    public AABB getRenderBoundingBox() {
-        return renderBoundingBox;
     }
 }

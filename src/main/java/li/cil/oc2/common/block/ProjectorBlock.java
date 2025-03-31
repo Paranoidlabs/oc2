@@ -2,6 +2,7 @@
 
 package li.cil.oc2.common.block;
 
+import com.mojang.serialization.MapCodec;
 import li.cil.oc2.common.Config;
 import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.blockentity.TickableBlockEntity;
@@ -29,6 +30,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 import javax.annotation.Nullable;
 
+import static li.cil.oc2.common.block.Blocks.PROJECTOR_CODEC;
+
 public final class ProjectorBlock extends HorizontalDirectionalBlock implements EntityBlock, EnergyConsumingBlock {
     public static final BooleanProperty LIT = BlockStateProperties.LIT;
 
@@ -43,16 +46,20 @@ public final class ProjectorBlock extends HorizontalDirectionalBlock implements 
     private static final VoxelShape POS_Z_SHAPE = VoxelShapeUtils.rotateHorizontalClockwise(NEG_X_SHAPE);
     private static final VoxelShape POS_X_SHAPE = VoxelShapeUtils.rotateHorizontalClockwise(POS_Z_SHAPE);
 
-    public ProjectorBlock() {
-        super(Properties
-            .of()
-            .mapColor(MapColor.METAL)
-            .sound(SoundType.METAL)
-            .lightLevel(state -> state.getValue(LIT) ? 8 : 0)
-            .strength(1.5f, 6.0f));
+    public ProjectorBlock(Properties properties) {
+        super(properties.lightLevel(ProjectorBlock::getLightLevel));
         registerDefaultState(getStateDefinition().any()
             .setValue(FACING, Direction.NORTH)
             .setValue(LIT, false));
+    }
+
+    private static int getLightLevel(final BlockState state) {
+        return (state.getBlock() instanceof ProjectorBlock && state.getValue(LIT)) ? 8 : 0;
+    }
+
+    @Override
+    protected MapCodec<? extends HorizontalDirectionalBlock> codec() {
+        return PROJECTOR_CODEC.get();
     }
 
     ///////////////////////////////////////////////////////////////////

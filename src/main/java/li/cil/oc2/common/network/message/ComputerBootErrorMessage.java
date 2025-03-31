@@ -2,40 +2,39 @@
 
 package li.cil.oc2.common.network.message;
 
+import li.cil.oc2.api.API;
 import li.cil.oc2.common.blockentity.ComputerBlockEntity;
 import li.cil.oc2.common.network.MessageUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
-import net.minecraftforge.network.NetworkEvent;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.neoforged.neoforge.network.handling.PlayPayloadContext;
 
 import javax.annotation.Nullable;
 
-public final class ComputerBootErrorMessage extends AbstractMessage {
-    private BlockPos pos;
-    private Component value;
+public record ComputerBootErrorMessage(BlockPos pos, Component value) implements CustomMessage {
 
-    ///////////////////////////////////////////////////////////////////
-
-    public ComputerBootErrorMessage(final ComputerBlockEntity computer, @Nullable final Component value) {
-        this.pos = computer.getBlockPos();
-        this.value = value;
-    }
+    public static final ResourceLocation ID = new ResourceLocation(API.MOD_ID, "computer_boot_error");
 
     public ComputerBootErrorMessage(final FriendlyByteBuf buffer) {
-        super(buffer);
+        this(buffer.readBlockPos(), buffer.readComponent());
+    }
+
+    public ComputerBootErrorMessage(final BlockEntity entity, final Component value) {
+        this(entity.getBlockPos(), value);
     }
 
     ///////////////////////////////////////////////////////////////////
 
     @Override
-    public void fromBytes(final FriendlyByteBuf buffer) {
-        pos = buffer.readBlockPos();
-        value = buffer.readComponent();
+    public ResourceLocation id() {
+        return ID;
     }
 
     @Override
-    public void toBytes(final FriendlyByteBuf buffer) {
+    public void write(final FriendlyByteBuf buffer) {
         buffer.writeBlockPos(pos);
         buffer.writeComponent(value);
     }
@@ -43,8 +42,11 @@ public final class ComputerBootErrorMessage extends AbstractMessage {
     ///////////////////////////////////////////////////////////////////
 
     @Override
-    protected void handleMessage(final NetworkEvent.Context context) {
+    public void handleClientSide(PlayPayloadContext context) {
         MessageUtils.withClientBlockEntityAt(pos, ComputerBlockEntity.class,
-            computer -> computer.getVirtualMachine().setBootErrorClient(value));
+                computer -> computer.getVirtualMachine().setBootErrorClient(value));
     }
+
+    @Override
+    public void handleServerSide(PlayPayloadContext context) {}
 }

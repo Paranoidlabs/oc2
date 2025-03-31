@@ -2,7 +2,8 @@
 
 package li.cil.oc2.api.capabilities;
 
-import net.minecraftforge.items.ItemStackHandler;
+
+import net.neoforged.neoforge.items.ItemStackHandler;
 
 /**
  * This interface may be implemented by entities hosting devices to allow

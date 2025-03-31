@@ -124,7 +124,7 @@ public final class FileChooserScreen extends Screen {
 
     @Override
     public void render(final GuiGraphics graphics, final int mouseX, final int mouseY, final float partialTicks) {
-        super.renderBackground(graphics);
+        super.renderBackground(graphics, mouseX, mouseY, partialTicks);
         fileList.render(graphics, mouseX, mouseY, partialTicks);
         fileNameTextField.render(graphics, mouseX, mouseY, partialTicks);
         super.render(graphics, mouseX, mouseY, partialTicks);
@@ -280,7 +280,7 @@ public final class FileChooserScreen extends Screen {
 
     private final class FileList extends ObjectSelectionList<FileList.FileEntry> {
         public FileList(final int y, final int height, final int slotHeight) {
-            super(FileChooserScreen.this.getMinecraft(), FileChooserScreen.this.width, FileChooserScreen.this.height, y, y + height, slotHeight);
+            super(FileChooserScreen.this.getMinecraft(), FileChooserScreen.this.width, FileChooserScreen.this.height, y, slotHeight);
         }
 
         public void refreshFiles(@Nullable final Path directory) {
@@ -413,7 +413,7 @@ public final class FileChooserScreen extends Screen {
                 } else {
                     return;
                 }
-                fileNameTextField.moveCursorToStart();
+                fileNameTextField.moveCursorToStart(true);
                 fileNameTextField.setHighlightPos(0);
                 setSelected(this);
             }

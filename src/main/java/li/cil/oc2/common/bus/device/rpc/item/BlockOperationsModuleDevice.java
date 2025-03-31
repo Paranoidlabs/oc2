@@ -34,10 +34,11 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.common.TierSortingRegistry;
-import net.minecraftforge.event.ForgeEventFactory;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.ItemStackHandler;
+import net.neoforged.neoforge.common.CommonHooks;
+import net.neoforged.neoforge.common.TierSortingRegistry;
+import net.neoforged.neoforge.event.EventHooks;
+import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.items.ItemStackHandler;
 
 import javax.annotation.Nullable;
 import java.time.Duration;
@@ -231,7 +232,7 @@ public final class BlockOperationsModuleDevice extends AbstractItemRPCDevice {
         }
 
         final ServerPlayer player = FakePlayerUtils.getFakePlayer(level, entity);
-        final int experience = net.minecraftforge.common.ForgeHooks.onBlockBreakEvent(level, GameType.DEFAULT_MODE, player, blockPos);
+        final int experience = CommonHooks.onBlockBreakEvent(level, GameType.DEFAULT_MODE, player, blockPos);
         if (experience == -1) {
             return false;
         }
@@ -252,7 +253,7 @@ public final class BlockOperationsModuleDevice extends AbstractItemRPCDevice {
             return false;
         }
 
-        if (!ForgeEventFactory.doPlayerHarvestCheck(player, blockState, true)) {
+        if (!EventHooks.doPlayerHarvestCheck(player, blockState, true)) {
             return false;
         }
 

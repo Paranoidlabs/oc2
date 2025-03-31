@@ -10,7 +10,6 @@ import li.cil.oc2.common.Config;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.block.EnergyConsumingBlock;
 import li.cil.oc2.common.bus.device.util.Devices;
-import li.cil.oc2.common.capabilities.Capabilities;
 import li.cil.oc2.common.item.Items;
 import li.cil.oc2.common.tags.ItemTags;
 import net.minecraft.ChatFormatting;
@@ -19,19 +18,20 @@ import net.minecraft.client.StringSplitter;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.core.Registry;
 import net.minecraft.locale.Language;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.*;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.client.ForgeHooksClient;
-import net.minecraftforge.registries.ForgeRegistry;
-import net.minecraftforge.registries.RegistryManager;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.client.ClientHooks;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static li.cil.oc2.common.Constants.*;
 import static li.cil.oc2.common.util.TextFormatUtils.withFormat;
@@ -64,7 +64,7 @@ public final class TooltipUtils {
 
         final int availableWidth = Math.max(x, screen.width - x);
         final int targetWidth = Math.min(availableWidth, widthHint);
-        final Font font = ForgeHooksClient.getTooltipFont(itemStack, minecraft.font);
+        final Font font = ClientHooks.getTooltipFont(itemStack, minecraft.font);
 
         final boolean needsWrapping = tooltip.stream().anyMatch(line -> font.width(line) > targetWidth);
         if (!needsWrapping) {
@@ -105,17 +105,6 @@ public final class TooltipUtils {
         if (energyConsumption > 0) {
             final MutableComponent energy = withFormat(String.valueOf(energyConsumption), ChatFormatting.GREEN);
             tooltip.add(withFormat(Component.translatable(Constants.TOOLTIP_ENERGY_CONSUMPTION, energy), ChatFormatting.GRAY));
-        }
-
-        // Additional tooltips for InternetGateWay
-        if (stack.getItem() == Items.INTERNET_GATEWAY.get()) {
-            if (Config.gatewayEnergyPerPacket > 0) {
-                final MutableComponent energy = withFormat(String.valueOf(Config.gatewayEnergyPerPacket), ChatFormatting.GREEN);
-                tooltip.add(withFormat(Component.translatable(Constants.TOOLTIP_INTERNET_ENERGY_PER_PACKET, energy), ChatFormatting.GRAY));
-            }
-            if (!Config.internetCardEnabled) {
-                tooltip.add(withFormat(Component.translatable(Constants.TOOLTIP_INTERNET_DISABLED), ChatFormatting.RED));
-            }
         }
     }
 
@@ -158,7 +147,7 @@ public final class TooltipUtils {
     }
 
     public static void addEntityEnergyInformation(final ItemStack stack, final List<Component> tooltip) {
-        stack.getCapability(Capabilities.energyStorage()).ifPresent(energy -> {
+        Optional.ofNullable(stack.getCapability(Capabilities.EnergyStorage.ITEM)).ifPresent(energy -> {
             if (energy.getEnergyStored() == 0) {
                 return;
             }
@@ -177,9 +166,9 @@ public final class TooltipUtils {
     ///////////////////////////////////////////////////////////////////
 
     private static String[] getDeviceTypeNames() {
-        final ForgeRegistry<DeviceType> registry = RegistryManager.ACTIVE.getRegistry(DeviceType.REGISTRY);
+        final Registry<DeviceType> registry = null;//RegistryManager.ACTIVE.getRegistry(DeviceType.REGISTRY);
         if (registry != null) {
-            return registry.getValues().stream().map(RegistryUtils::key).toArray(String[]::new);
+            return registry.stream().map(RegistryUtils::key).toArray(String[]::new);
         } else {
             return new String[0];
         }

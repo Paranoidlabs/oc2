@@ -8,7 +8,6 @@ import li.cil.oc2.common.block.MonitorBlock;
 import li.cil.oc2.common.bus.device.DeviceGroup;
 import li.cil.oc2.common.bus.device.vm.block.KeyboardDevice;
 import li.cil.oc2.common.bus.device.vm.block.MonitorDevice;
-import li.cil.oc2.common.capabilities.Capabilities;
 import li.cil.oc2.common.container.MonitorDisplayContainer;
 import li.cil.oc2.common.energy.FixedEnergyStorage;
 import li.cil.oc2.common.network.MonitorLoadBalancer;
@@ -310,18 +309,5 @@ public final class MonitorBlockEntity extends ModBlockEntity implements Tickable
         energy.deserializeNBT(tag.getCompound(ENERGY_TAG_NAME));
         hasEnergy = tag.getBoolean(HAS_ENERGY_TAG_NAME);
         isPowered = tag.getBoolean(IS_RENDERING_TAG_NAME);
-    }
-
-    ///////////////////////////////////////////////////////////////////
-
-    @Override
-    protected void collectCapabilities(final CapabilityCollector collector, @Nullable final Direction direction) {
-        if(direction != getBlockState().getValue(MonitorBlock.FACING)) {
-            collector.offer(Capabilities.device(), deviceGroup);
-
-            if (Config.monitorsUseEnergy()) {
-                collector.offer(Capabilities.energyStorage(), energy);
-            }
-        }
     }
 }

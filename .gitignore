@@ -38,3 +38,5 @@ libs/
 
 # Don't ignore bin from scripts
 !/src/main/scripts/bin/
+
+/runs/

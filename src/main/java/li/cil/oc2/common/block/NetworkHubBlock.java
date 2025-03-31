@@ -2,6 +2,7 @@
 
 package li.cil.oc2.common.block;
 
+import com.mojang.serialization.MapCodec;
 import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.blockentity.NetworkHubBlockEntity;
 import net.minecraft.core.BlockPos;
@@ -19,14 +20,20 @@ import net.minecraft.world.level.material.MapColor;
 
 import javax.annotation.Nullable;
 
+import static li.cil.oc2.common.block.Blocks.NETWORK_HUB_CODEC;
+
 public final class NetworkHubBlock extends HorizontalDirectionalBlock implements EntityBlock {
-    public NetworkHubBlock() {
-        super(Properties
-            .of()
+    public NetworkHubBlock(Properties properties) {
+        super(properties
             .mapColor(MapColor.METAL)
             .sound(SoundType.METAL)
             .strength(1.5f, 6.0f));
         registerDefaultState(getStateDefinition().any().setValue(FACING, Direction.NORTH));
+    }
+
+    @Override
+    protected MapCodec<? extends HorizontalDirectionalBlock> codec() {
+        return NETWORK_HUB_CODEC.get();
     }
 
     ///////////////////////////////////////////////////////////////////

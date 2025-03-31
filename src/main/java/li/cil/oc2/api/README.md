@@ -155,9 +155,6 @@ import li.cil.oc2.api.bus.device.object.ObjectDevice;
 import li.cil.oc2.api.bus.device.rpc.RPCDevice;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.fml.ModList;
 import li.cil.oc2.api.bus.device.Device;
 
 class ModBlockEntity extends BlockEntity {
@@ -334,8 +331,6 @@ Shared device provider registration:
 
 ```java
 import li.cil.oc2.api.bus.device.provider.BlockDeviceProvider;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.registries.DeferredRegister;
 
 class Providers {
     static final DeferredRegister<BlockDeviceProvider> BLOCK_DEVICE_PROVIDERS =

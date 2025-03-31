@@ -4,7 +4,7 @@ package li.cil.oc2.common.energy;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
-import net.minecraftforge.energy.EnergyStorage;
+import net.neoforged.neoforge.energy.EnergyStorage;
 
 public final class FixedEnergyStorage extends EnergyStorage {
     public static final String STORED_TAG_NAME = "stored";

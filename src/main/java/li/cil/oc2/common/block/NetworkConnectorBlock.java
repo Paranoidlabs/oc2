@@ -2,6 +2,7 @@
 
 package li.cil.oc2.common.block;
 
+import com.mojang.serialization.MapCodec;
 import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.blockentity.NetworkConnectorBlockEntity;
 import li.cil.oc2.common.blockentity.TickableBlockEntity;
@@ -26,6 +27,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import javax.annotation.Nullable;
 import java.util.Objects;
 
+import static li.cil.oc2.common.block.Blocks.NETWORK_CONNECTOR_CODEC;
+
 public final class NetworkConnectorBlock extends FaceAttachedHorizontalDirectionalBlock implements EntityBlock {
     private static final VoxelShape NEG_Z_SHAPE = Block.box(5, 5, 7, 11, 11, 16);
     private static final VoxelShape POS_Z_SHAPE = Block.box(5, 5, 0, 11, 11, 9);
@@ -36,15 +39,16 @@ public final class NetworkConnectorBlock extends FaceAttachedHorizontalDirection
 
     ///////////////////////////////////////////////////////////////////
 
-    public NetworkConnectorBlock() {
-        super(Properties
-            .of()
-            .mapColor(MapColor.METAL)
-            .sound(SoundType.METAL)
-            .strength(1.5f, 6.0f));
+    public NetworkConnectorBlock(Properties properties) {
+        super(properties);
         registerDefaultState(getStateDefinition().any()
             .setValue(FACING, Direction.NORTH)
             .setValue(FACE, AttachFace.WALL));
+    }
+
+    @Override
+    protected MapCodec<? extends FaceAttachedHorizontalDirectionalBlock> codec() {
+        return NETWORK_CONNECTOR_CODEC.get();
     }
 
     ///////////////////////////////////////////////////////////////////

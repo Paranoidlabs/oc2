@@ -31,6 +31,6 @@ public final class ItemTags {
     ///////////////////////////////////////////////////////////////////
 
     private static TagKey<Item> tag(final String name) {
-        return TagKey.create(Registries.ITEM, new ResourceLocation(API.MOD_ID, name));
+        return net.minecraft.tags.ItemTags.create(new ResourceLocation(API.MOD_ID, name));
     }
 }

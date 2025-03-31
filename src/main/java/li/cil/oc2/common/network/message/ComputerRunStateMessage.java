@@ -2,47 +2,48 @@
 
 package li.cil.oc2.common.network.message;
 
+import li.cil.oc2.api.API;
+import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.blockentity.ComputerBlockEntity;
 import li.cil.oc2.common.network.MessageUtils;
 import li.cil.oc2.common.vm.VMRunState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.network.NetworkEvent;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.neoforged.neoforge.network.handling.PlayPayloadContext;
 
-public final class ComputerRunStateMessage extends AbstractMessage {
-    private BlockPos pos;
-    private VMRunState value;
+public record ComputerRunStateMessage(BlockPos pos, VMRunState value) implements CustomMessage {
 
-    ///////////////////////////////////////////////////////////////////
+    public static final ResourceLocation ID = new ResourceLocation(API.MOD_ID, "computer_run_state");
 
-    public ComputerRunStateMessage(final ComputerBlockEntity computer, final VMRunState value) {
-        this.pos = computer.getBlockPos();
-        this.value = value;
+    public ComputerRunStateMessage(BlockEntity entity, VMRunState value) {
+        this(entity.getBlockPos(), value);
     }
 
     public ComputerRunStateMessage(final FriendlyByteBuf buffer) {
-        super(buffer);
-    }
-
-    ///////////////////////////////////////////////////////////////////
-
-    @Override
-    public void fromBytes(final FriendlyByteBuf buffer) {
-        pos = buffer.readBlockPos();
-        value = buffer.readEnum(VMRunState.class);
+        this(buffer.readBlockPos(), buffer.readEnum(VMRunState.class));
     }
 
     @Override
-    public void toBytes(final FriendlyByteBuf buffer) {
+    public ResourceLocation id() {
+        return ID;
+    }
+
+    @Override
+    public void write(final FriendlyByteBuf buffer) {
         buffer.writeBlockPos(pos);
         buffer.writeEnum(value);
     }
 
-    ///////////////////////////////////////////////////////////////////
+    @Override
+    public void handleClientSide(PlayPayloadContext context) {
+        MessageUtils.withClientBlockEntityAt(pos, ComputerBlockEntity.class,
+                computer -> computer.getVirtualMachine().setRunStateClient(value));
+    }
 
     @Override
-    protected void handleMessage(final NetworkEvent.Context context) {
-        MessageUtils.withClientBlockEntityAt(pos, ComputerBlockEntity.class,
-            computer -> computer.getVirtualMachine().setRunStateClient(value));
+    public void handleServerSide(PlayPayloadContext context) {
+
     }
 }

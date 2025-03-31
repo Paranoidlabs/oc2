@@ -18,11 +18,12 @@ import li.cil.oc2.common.item.Items;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.registries.DeferredRegister;
+
+import java.util.function.Supplier;
 
 @OnlyIn(Dist.CLIENT)
 public final class Manuals {
@@ -33,17 +34,11 @@ public final class Manuals {
 
     ///////////////////////////////////////////////////////////////////
 
-    public static final RegistryObject<ManualModel> MANUAL = MANUALS.register("manual", Manual::new);
+    public static final Supplier<ManualModel> MANUAL = MANUALS.register("manual", Manual::new);
 
     ///////////////////////////////////////////////////////////////////
 
-    public static void initialize() {
-        MANUALS.register(FMLJavaModLoadingContext.get().getModEventBus());
-
-        PATH_PROVIDERS.register(FMLJavaModLoadingContext.get().getModEventBus());
-        CONTENT_PROVIDERS.register(FMLJavaModLoadingContext.get().getModEventBus());
-        TABS.register(FMLJavaModLoadingContext.get().getModEventBus());
-
+    public static void initialize(IEventBus modEventBus) {
         PATH_PROVIDERS.register("path_provider", () -> new NamespacePathProvider(API.MOD_ID));
         CONTENT_PROVIDERS.register("content_provider", () -> new NamespaceDocumentProvider(API.MOD_ID, "doc"));
 
@@ -59,5 +54,11 @@ public final class Manuals {
             ManualModel.LANGUAGE_KEY + "/item/index.md",
             Component.translatable("manual." + API.MOD_ID + ".items"),
             new ItemStack(Items.TRANSISTOR.get())));
+
+        MANUALS.register(modEventBus);
+
+        PATH_PROVIDERS.register(modEventBus);
+        CONTENT_PROVIDERS.register(modEventBus);
+        TABS.register(modEventBus);
     }
 }

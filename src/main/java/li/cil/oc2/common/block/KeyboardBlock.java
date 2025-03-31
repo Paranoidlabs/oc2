@@ -2,6 +2,7 @@
 
 package li.cil.oc2.common.block;
 
+import com.mojang.serialization.MapCodec;
 import li.cil.oc2.client.gui.KeyboardScreen;
 import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.blockentity.KeyboardBlockEntity;
@@ -27,9 +28,11 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.Nullable;
+
+import static li.cil.oc2.common.block.Blocks.KEYBOARD_CODEC;
 
 public final class KeyboardBlock extends HorizontalDirectionalBlock implements EntityBlock {
     private static final VoxelShape NEG_Z_SHAPE = Shapes.or(Block.box(0, 0, 0, 16, 8, 16), // main body
@@ -41,9 +44,14 @@ public final class KeyboardBlock extends HorizontalDirectionalBlock implements E
 
     ///////////////////////////////////////////////////////////////////
 
-    public KeyboardBlock() {
-        super(Properties.of().mapColor(MapColor.METAL).sound(SoundType.METAL).strength(1.5f, 6.0f));
+    public KeyboardBlock(Properties properties) {
+        super(properties);
         registerDefaultState(getStateDefinition().any().setValue(FACING, Direction.NORTH));
+    }
+
+    @Override
+    protected MapCodec<? extends HorizontalDirectionalBlock> codec() {
+        return KEYBOARD_CODEC.get();
     }
 
     ///////////////////////////////////////////////////////////////////

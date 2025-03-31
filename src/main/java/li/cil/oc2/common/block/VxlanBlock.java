@@ -1,5 +1,6 @@
 package li.cil.oc2.common.block;
 
+import com.mojang.serialization.MapCodec;
 import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.blockentity.TickableBlockEntity;
 import li.cil.oc2.common.blockentity.VxlanBlockEntity;
@@ -20,14 +21,17 @@ import net.minecraft.world.level.material.MapColor;
 
 import javax.annotation.Nullable;
 
+import static li.cil.oc2.common.block.Blocks.VXLAN_CODEC;
+
 public final class VxlanBlock extends HorizontalDirectionalBlock implements EntityBlock {
-    public VxlanBlock() {
-        super(Properties
-            .of()
-            .mapColor(MapColor.METAL)
-            .sound(SoundType.METAL)
-            .strength(1.5f, 6.0f));
+    public VxlanBlock(Properties properties) {
+        super(properties);
         registerDefaultState(getStateDefinition().any().setValue(FACING, Direction.NORTH));
+    }
+
+    @Override
+    protected MapCodec<? extends HorizontalDirectionalBlock> codec() {
+        return VXLAN_CODEC.get();
     }
 
     ///////////////////////////////////////////////////////////////////

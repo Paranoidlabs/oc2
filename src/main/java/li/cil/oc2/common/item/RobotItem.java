@@ -29,8 +29,7 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.client.extensions.common.IClientItemExtensions;
-import net.minecraftforge.common.capabilities.ICapabilityProvider;
+import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -47,16 +46,6 @@ public final class RobotItem extends ModItem {
         TooltipUtils.addEnergyConsumption(Config.robotEnergyPerTick, tooltip);
         TooltipUtils.addEntityEnergyInformation(stack, tooltip);
         TooltipUtils.addEntityInventoryInformation(stack, tooltip);
-    }
-
-    @Nullable
-    @Override
-    public ICapabilityProvider initCapabilities(final ItemStack stack, @Nullable final CompoundTag nbt) {
-        if (Config.robotsUseEnergy()) {
-            return new EnergyStorageItemStack(stack, Config.robotEnergyStorage, MOD_TAG_NAME, ENERGY_TAG_NAME);
-        } else {
-            return null;
-        }
     }
 
     @Override
@@ -123,7 +112,7 @@ public final class RobotItem extends ModItem {
         final ItemStack robot = new ItemStack(Items.ROBOT.get());
 
         final CompoundTag itemsTag = NBTUtils.getOrCreateChildTag(robot.getOrCreateTag(), API.MOD_ID, ITEMS_TAG_NAME);
-        itemsTag.put(key(DeviceTypes.FLASH_MEMORY), makeInventoryTag(
+        itemsTag.put(key(DeviceTypes.FLASH_MEMORY.get()), makeInventoryTag(
             new ItemStack(Items.FLASH_MEMORY_CUSTOM.get())
         ));
 

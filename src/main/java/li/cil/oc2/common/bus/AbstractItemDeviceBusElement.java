@@ -12,10 +12,10 @@ import li.cil.oc2.common.bus.device.util.Devices;
 import li.cil.oc2.common.bus.device.util.ItemDeviceInfo;
 import li.cil.oc2.common.util.ItemDeviceUtils;
 import li.cil.oc2.common.util.NBTTagIds;
+import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.registries.IForgeRegistry;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -40,9 +40,9 @@ public abstract class AbstractItemDeviceBusElement extends AbstractGroupingDevic
     }
 
     public void handleSlotContentsChanged(final int slot, final ItemStack stack) {
-        final ItemQueryResult queryResult = collectDevices(stack);
+        final Set<ItemEntry> newEntries = collectDevices(stack);
 
-        setEntriesForGroup(slot, queryResult);
+        setEntriesForGroup(slot, newEntries);
     }
 
     public void exportDeviceDataToItemStack(final int slot, final ItemStack stack) {
@@ -70,7 +70,7 @@ public abstract class AbstractItemDeviceBusElement extends AbstractGroupingDevic
 
     protected abstract ItemDeviceQuery makeQuery(final ItemStack stack);
 
-    protected ItemQueryResult collectDevices(final ItemStack stack) {
+    protected Set<ItemEntry> collectDevices(final ItemStack stack) {
         final ItemDeviceQuery query = makeQuery(stack);
         final HashSet<ItemEntry> entries = new HashSet<>();
 
@@ -82,7 +82,7 @@ public abstract class AbstractItemDeviceBusElement extends AbstractGroupingDevic
 
         importDeviceDataFromItemStack(query, entries);
 
-        return new ItemQueryResult(query, entries);
+        return entries;
     }
 
     protected void collectSyntheticDevices(final ItemDeviceQuery query, final HashSet<ItemEntry> entries) {
@@ -96,12 +96,12 @@ public abstract class AbstractItemDeviceBusElement extends AbstractGroupingDevic
     }
 
     @Override
-    protected void onEntryRemoved(final String dataKey, final CompoundTag tag, @Nullable final ItemDeviceQuery query) {
-        super.onEntryRemoved(dataKey, tag, query);
-        final IForgeRegistry<ItemDeviceProvider> registry = Providers.itemDeviceProviderRegistry();
-        final ItemDeviceProvider provider = registry.getValue(new ResourceLocation(dataKey));
+    protected void onEntryRemoved(final String dataKey, final CompoundTag tag) {
+        super.onEntryRemoved(dataKey, tag);
+        final Registry<ItemDeviceProvider> registry = Providers.itemDeviceProviderRegistry();
+        final ItemDeviceProvider provider = registry.get(new ResourceLocation(dataKey));
         if (provider != null) {
-            provider.unmount(query, tag);
+            provider.unmount(null, tag);
         }
     }
 
@@ -121,27 +121,6 @@ public abstract class AbstractItemDeviceBusElement extends AbstractGroupingDevic
     }
 
     ///////////////////////////////////////////////////////////////////
-
-    protected final class ItemQueryResult extends QueryResult {
-        @Nullable private final ItemDeviceQuery query;
-        private final Set<ItemEntry> entries;
-
-        public ItemQueryResult(@Nullable final ItemDeviceQuery query, final Set<ItemEntry> entries) {
-            this.query = query;
-            this.entries = entries;
-        }
-
-        @Nullable
-        @Override
-        public ItemDeviceQuery getQuery() {
-            return query;
-        }
-
-        @Override
-        public Set<ItemEntry> getEntries() {
-            return entries;
-        }
-    }
 
     protected record ItemEntry(ItemDeviceInfo deviceInfo) implements Entry {
         @Override

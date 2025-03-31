@@ -75,6 +75,9 @@ public abstract class ImageButton extends AbstractButton {
             background = pressedImage;
         }
 
+        var x = this.getX();
+        var y = this.getY();
+
         background.draw(graphics, x, y);
 
         if (!Objects.equals(getMessage(), Component.empty())) {

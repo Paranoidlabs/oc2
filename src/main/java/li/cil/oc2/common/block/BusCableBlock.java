@@ -3,6 +3,7 @@
 package li.cil.oc2.common.block;
 
 import com.google.common.collect.Maps;
+import com.mojang.serialization.MapCodec;
 import li.cil.oc2.client.gui.BusInterfaceScreen;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.blockentity.BlockEntities;
@@ -22,15 +23,13 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
-import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.GameRules;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.*;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
@@ -45,8 +44,8 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -54,6 +53,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import static li.cil.oc2.common.block.Blocks.BUS_CABLE_CODEC;
 import static li.cil.oc2.common.util.TranslationUtils.text;
 
 public final class BusCableBlock extends BaseEntityBlock {
@@ -121,12 +121,8 @@ public final class BusCableBlock extends BaseEntityBlock {
 
     ///////////////////////////////////////////////////////////////////
 
-    public BusCableBlock() {
-        super(Properties
-            .of()
-            .mapColor(MapColor.METAL)
-            .sound(SoundType.METAL)
-            .strength(1.5f, 6.0f));
+    public BusCableBlock(BlockBehaviour.Properties properties) {
+        super(properties);
 
         BlockState defaultState = getStateDefinition().any();
         for (final EnumProperty<ConnectionType> property : FACING_TO_CONNECTION_MAP.values()) {
@@ -137,6 +133,11 @@ public final class BusCableBlock extends BaseEntityBlock {
         registerDefaultState(defaultState);
 
         shapes = makeShapes();
+    }
+
+    @Override
+    protected MapCodec<? extends BaseEntityBlock> codec() {
+        return BUS_CABLE_CODEC.get();
     }
 
     ///////////////////////////////////////////////////////////////////
@@ -351,7 +352,7 @@ public final class BusCableBlock extends BaseEntityBlock {
     }
 
     @Override
-    public ItemStack getCloneItemStack(final BlockState state, final HitResult hit, final BlockGetter level, final BlockPos pos, final Player player) {
+    public ItemStack getCloneItemStack(final BlockState state, final HitResult hit, final LevelReader level, final BlockPos pos, final Player player) {
         final BlockEntity blockEntity = level.getBlockEntity(pos);
         if (!(blockEntity instanceof final BusCableBlockEntity busCable)) {
             return super.getCloneItemStack(state, hit, level, pos, player);

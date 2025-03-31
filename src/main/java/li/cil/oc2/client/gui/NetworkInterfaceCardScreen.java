@@ -6,6 +6,7 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import li.cil.oc2.common.network.message.NetworkInterfaceCardConfigurationMessage;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.world.item.ItemDisplayContext;
 import org.joml.Quaternionf;
@@ -15,7 +16,6 @@ import li.cil.oc2.client.renderer.ModRenderType;
 import li.cil.oc2.common.item.Items;
 import li.cil.oc2.common.item.NetworkInterfaceCardItem;
 import li.cil.oc2.common.network.Network;
-import li.cil.oc2.common.network.message.NetworkInterfaceCardConfigurationMessage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -148,7 +148,7 @@ public final class NetworkInterfaceCardScreen extends Screen {
 
     @Override
     public void render(final GuiGraphics graphics, final int mouseX, final int mouseY, final float partialTicks) {
-        renderBackground(graphics);
+        renderBackground(graphics, mouseX, mouseY, partialTicks);
         Sprites.NETWORK_INTERFACE_CARD_SCREEN.draw(graphics, left, top);
 
         super.render(graphics, mouseX, mouseY, partialTicks);

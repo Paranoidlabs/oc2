@@ -2,13 +2,13 @@
 
 package li.cil.oc2.common.block;
 
+import com.mojang.serialization.MapCodec;
 import li.cil.oc2.api.bus.device.DeviceTypes;
 import li.cil.oc2.api.capabilities.RedstoneEmitter;
 import li.cil.oc2.common.Config;
 import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.blockentity.ComputerBlockEntity;
 import li.cil.oc2.common.blockentity.TickableBlockEntity;
-import li.cil.oc2.common.capabilities.Capabilities;
 import li.cil.oc2.common.integration.Wrenches;
 import li.cil.oc2.common.item.Items;
 import li.cil.oc2.common.util.NBTUtils;
@@ -41,14 +41,16 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Optional;
 
 import static li.cil.oc2.common.Constants.BLOCK_ENTITY_TAG_NAME_IN_ITEM;
 import static li.cil.oc2.common.Constants.ITEMS_TAG_NAME;
+import static li.cil.oc2.common.block.Blocks.COMPUTER_CODEC;
 import static li.cil.oc2.common.util.NBTUtils.makeInventoryTag;
 import static li.cil.oc2.common.util.TranslationUtils.text;
 
@@ -68,13 +70,14 @@ public final class ComputerBlock extends HorizontalDirectionalBlock implements E
 
     ///////////////////////////////////////////////////////////////////
 
-    public ComputerBlock() {
-        super(Properties
-            .of()
-            .mapColor(MapColor.METAL)
-            .sound(SoundType.METAL)
-            .strength(1.5f, 6.0f));
+    public ComputerBlock(Properties properties) {
+        super(properties);
         registerDefaultState(getStateDefinition().any().setValue(FACING, Direction.NORTH));
+    }
+
+    @Override
+    protected MapCodec<? extends HorizontalDirectionalBlock> codec() {
+        return COMPUTER_CODEC.get();
     }
 
     ///////////////////////////////////////////////////////////////////
@@ -97,10 +100,10 @@ public final class ComputerBlock extends HorizontalDirectionalBlock implements E
     @Override
     public int getSignal(final BlockState state, final BlockGetter level, final BlockPos pos, final Direction side) {
         final BlockEntity blockEntity = level.getBlockEntity(pos);
-        if (blockEntity != null) {
+        if (blockEntity instanceof ComputerBlockEntity computer) {
             // Redstone requests info for faces with external perspective. Capabilities treat
             // the Direction from internal perspective, so flip it.
-            return blockEntity.getCapability(Capabilities.redstoneEmitter(), side.getOpposite())
+            return Optional.ofNullable(computer.getRedstoneEmitter(side.getOpposite()))
                 .map(RedstoneEmitter::getRedstoneOutput)
                 .orElse(0);
         }
@@ -165,7 +168,7 @@ public final class ComputerBlock extends HorizontalDirectionalBlock implements E
     }
 
     @Override
-    public void playerWillDestroy(final Level level, final BlockPos pos, final BlockState state, final Player player) {
+    public BlockState playerWillDestroy(final Level level, final BlockPos pos, final BlockState state, final Player player) {
         final BlockEntity blockEntity = level.getBlockEntity(pos);
         if (!level.isClientSide() && blockEntity instanceof final ComputerBlockEntity computer) {
             if (!computer.getItemStackHandlers().isEmpty()) {
@@ -179,7 +182,7 @@ public final class ComputerBlock extends HorizontalDirectionalBlock implements E
             }
         }
 
-        super.playerWillDestroy(level, pos, state, player);
+        return super.playerWillDestroy(level, pos, state, player);
     }
 
     @Override
@@ -216,7 +219,7 @@ public final class ComputerBlock extends HorizontalDirectionalBlock implements E
         final ItemStack computer = new ItemStack(Items.COMPUTER.get());
 
         final CompoundTag itemsTag = NBTUtils.getOrCreateChildTag(computer.getOrCreateTag(), BLOCK_ENTITY_TAG_NAME_IN_ITEM, ITEMS_TAG_NAME);
-        itemsTag.put(DeviceTypes.FLASH_MEMORY.getName().toString(), makeInventoryTag(
+        itemsTag.put(DeviceTypes.FLASH_MEMORY.get().getName().toString(), makeInventoryTag(
             new ItemStack(Items.FLASH_MEMORY_CUSTOM.get())
         ));
 
@@ -228,22 +231,22 @@ public final class ComputerBlock extends HorizontalDirectionalBlock implements E
 
         final CompoundTag itemsTag = NBTUtils.getOrCreateChildTag(computer.getOrCreateTag(), BLOCK_ENTITY_TAG_NAME_IN_ITEM, ITEMS_TAG_NAME);
 
-        itemsTag.put(DeviceTypes.MEMORY.getName().toString(), makeInventoryTag(
+        itemsTag.put(DeviceTypes.MEMORY.get().getName().toString(), makeInventoryTag(
             new ItemStack(Items.MEMORY_LARGE.get()),
             new ItemStack(Items.MEMORY_LARGE.get()),
             new ItemStack(Items.MEMORY_LARGE.get()),
             new ItemStack(Items.MEMORY_LARGE.get())
         ));
 
-        itemsTag.put(DeviceTypes.HARD_DRIVE.getName().toString(), makeInventoryTag(
+        itemsTag.put(DeviceTypes.HARD_DRIVE.get().getName().toString(), makeInventoryTag(
             new ItemStack(Items.HARD_DRIVE_CUSTOM.get())
         ));
 
-        itemsTag.put(DeviceTypes.CARD.getName().toString(), makeInventoryTag(
+        itemsTag.put(DeviceTypes.CARD.get().getName().toString(), makeInventoryTag(
             new ItemStack(Items.NETWORK_INTERFACE_CARD.get())
         ));
 
-        itemsTag.put(DeviceTypes.CPU.getName().toString(), makeInventoryTag(
+        itemsTag.put(DeviceTypes.CPU.get().getName().toString(), makeInventoryTag(
             new ItemStack(Items.CPU_TIER_3.get())
         ));
 

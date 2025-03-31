@@ -2,52 +2,51 @@
 
 package li.cil.oc2.common.network.message;
 
+import li.cil.oc2.api.API;
 import li.cil.oc2.common.blockentity.MonitorBlockEntity;
 import li.cil.oc2.common.network.MessageUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.network.NetworkEvent;
+import net.minecraft.resources.ResourceLocation;
+import net.neoforged.neoforge.network.handling.PlayPayloadContext;
 
-public final class MonitorPowerMessageForwarded extends AbstractMessage {
-    private BlockPos pos;
-    private boolean power;
+public record MonitorPowerMessageForwarded(BlockPos pos, boolean power) implements CustomMessage {
 
-    ///////////////////////////////////////////////////////////////////
+    public static final ResourceLocation ID = new ResourceLocation(API.MOD_ID, "monitor_power_forwarded");
 
     public MonitorPowerMessageForwarded(final MonitorBlockEntity monitor, final boolean power) {
-        this.pos = monitor.getBlockPos();
-        this.power = power;
+        this(monitor.getBlockPos(), power);
     }
 
     public MonitorPowerMessageForwarded(final FriendlyByteBuf buffer) {
-        super(buffer);
-    }
-
-    ///////////////////////////////////////////////////////////////////
-
-    @Override
-    public void fromBytes(final FriendlyByteBuf buffer) {
-        pos = buffer.readBlockPos();
-        power = buffer.readBoolean();
+        this(buffer.readBlockPos(), buffer.readBoolean());
     }
 
     @Override
-    public void toBytes(final FriendlyByteBuf buffer) {
+    public void write(final FriendlyByteBuf buffer) {
         buffer.writeBlockPos(pos);
         buffer.writeBoolean(power);
     }
 
-    ///////////////////////////////////////////////////////////////////
+    @Override
+    public ResourceLocation id() {
+        return ID;
+    }
 
     @Override
-    protected void handleMessage(final NetworkEvent.Context context) {
+    public void handleClientSide(PlayPayloadContext context) {
         MessageUtils.withClientBlockEntityAt(pos, MonitorBlockEntity.class,
-            (monitor) -> {
-                if (power) {
-                    monitor.start();
-                } else {
-                    monitor.stop();
-                }
-            });
+                (monitor) -> {
+                    if (power) {
+                        monitor.start();
+                    } else {
+                        monitor.stop();
+                    }
+                });
+    }
+
+    @Override
+    public void handleServerSide(PlayPayloadContext context) {
+
     }
 }

@@ -2,6 +2,7 @@
 
 package li.cil.oc2.common.block;
 
+import com.mojang.serialization.MapCodec;
 import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.blockentity.TickableBlockEntity;
 import net.minecraft.core.BlockPos;
@@ -17,14 +18,16 @@ import net.minecraft.world.level.material.MapColor;
 
 import javax.annotation.Nullable;
 
+import static li.cil.oc2.common.block.Blocks.CREATIVE_ENERGY_CODEC;
+
 public final class CreativeEnergyBlock extends Block implements EntityBlock {
-    public CreativeEnergyBlock() {
-        super(Properties
-            .of()
-            .mapColor(MapColor.METAL)
-            .sound(SoundType.METAL)
-            .strength(-1, 3600000)
-            .noLootTable());
+    public CreativeEnergyBlock(Properties properties) {
+        super(properties);
+    }
+
+    @Override
+    protected MapCodec<? extends Block> codec() {
+        return CREATIVE_ENERGY_CODEC.get();
     }
 
     ///////////////////////////////////////////////////////////////////

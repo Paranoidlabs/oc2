@@ -3,14 +3,13 @@
 package li.cil.oc2.data;
 
 import li.cil.oc2.common.item.Items;
+import net.minecraft.advancements.Criterion;
 import net.minecraft.advancements.critereon.InventoryChangeTrigger;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.*;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.level.ItemLike;
-import net.minecraftforge.common.Tags;
-
-import java.util.function.Consumer;
+import net.neoforged.neoforge.common.Tags;
 
 public final class ModRecipesProvider extends RecipeProvider {
     public ModRecipesProvider(final PackOutput output) {
@@ -18,7 +17,7 @@ public final class ModRecipesProvider extends RecipeProvider {
     }
 
     @Override
-    protected void buildRecipes(final Consumer<FinishedRecipe> consumer) {
+    protected void buildRecipes(final RecipeOutput consumer) {
         ShapedRecipeBuilder
             .shaped(RecipeCategory.MISC, Items.COMPUTER.get())
             .pattern("ICI")
@@ -152,14 +151,6 @@ public final class ModRecipesProvider extends RecipeProvider {
             .unlockedBy("has_transistor", inventoryChange(Items.TRANSISTOR.get()))
             .save(consumer);
 
-        WrenchRecipeBuilder
-            .wrenchRecipe(Items.MANUAL.get())
-            .requires(net.minecraft.world.item.Items.BOOK)
-            .unlockedBy("has_book", inventoryChange(net.minecraft.world.item.Items.BOOK))
-            .unlockedBy("has_wrench", inventoryChange(Items.WRENCH.get()))
-            .save(consumer);
-
-
         ShapedRecipeBuilder
             .shaped(RecipeCategory.MISC, Items.NETWORK_CABLE.get(), 8)
             .pattern("SSS")
@@ -280,13 +271,6 @@ public final class ModRecipesProvider extends RecipeProvider {
             .unlockedBy("has_robot", inventoryChange(Items.ROBOT.get()))
             .save(consumer);
 
-        WrenchRecipeBuilder
-            .wrenchRecipe(Items.HARD_DRIVE_CUSTOM.get())
-            .requires(Items.HARD_DRIVE_LARGE.get())
-            .unlockedBy("has_computer", inventoryChange(Items.COMPUTER.get()))
-            .unlockedBy("has_robot", inventoryChange(Items.ROBOT.get()))
-            .save(consumer);
-
         ShapedRecipeBuilder
             .shaped(RecipeCategory.MISC, Items.FLASH_MEMORY.get())
             .pattern("ITI")
@@ -295,13 +279,6 @@ public final class ModRecipesProvider extends RecipeProvider {
             .define('T', Items.TRANSISTOR.get())
             .define('R', Tags.Items.DUSTS_REDSTONE)
             .define('B', Items.CIRCUIT_BOARD.get())
-            .unlockedBy("has_computer", inventoryChange(Items.COMPUTER.get()))
-            .unlockedBy("has_robot", inventoryChange(Items.ROBOT.get()))
-            .save(consumer);
-
-        WrenchRecipeBuilder
-            .wrenchRecipe(Items.FLASH_MEMORY_CUSTOM.get())
-            .requires(Items.FLASH_MEMORY.get())
             .unlockedBy("has_computer", inventoryChange(Items.COMPUTER.get()))
             .unlockedBy("has_robot", inventoryChange(Items.ROBOT.get()))
             .save(consumer);
@@ -437,7 +414,7 @@ public final class ModRecipesProvider extends RecipeProvider {
             .save(consumer);
     }
 
-    private static InventoryChangeTrigger.TriggerInstance inventoryChange(final ItemLike item) {
+    private static Criterion<?> inventoryChange(final ItemLike item) {
         return InventoryChangeTrigger.TriggerInstance.hasItems(item);
     }
 }

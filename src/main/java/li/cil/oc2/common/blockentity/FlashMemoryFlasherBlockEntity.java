@@ -6,7 +6,6 @@ import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.block.FlashMemoryFlasherBlock;
 import li.cil.oc2.common.bus.device.vm.block.FlashMemoryFlasherContainer;
 import li.cil.oc2.common.bus.device.vm.block.FlashMemoryFlasherDevice;
-import li.cil.oc2.common.capabilities.Capabilities;
 import li.cil.oc2.common.container.TypedItemStackHandler;
 import li.cil.oc2.common.network.Network;
 import li.cil.oc2.common.network.message.FirmwareFlasherMessage;
@@ -21,8 +20,8 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -85,7 +84,7 @@ public final class FlashMemoryFlasherBlockEntity extends ModBlockEntity implemen
             ItemStackUtils.spawnAsEntity(level, getBlockPos().relative(facing), stack, facing).ifPresent(entity -> {
                 if (player != null) {
                     entity.setNoPickUpDelay();
-                    entity.setThrower(player.getUUID());
+                    entity.setThrower(player);
                 }
             });
         }
@@ -98,15 +97,6 @@ public final class FlashMemoryFlasherBlockEntity extends ModBlockEntity implemen
     @OnlyIn(Dist.CLIENT)
     public void setFlashMemory(final ItemStack stack) {
         itemHandler.setStackInSlot(0, stack);
-    }
-
-    @Override
-    protected void collectCapabilities(final CapabilityCollector collector, @Nullable final Direction direction) {
-        collector.offer(Capabilities.itemHandler(), itemHandler);
-
-        if (direction == getBlockState().getValue(FlashMemoryFlasherBlock.FACING).getOpposite()) {
-            collector.offer(Capabilities.device(), device);
-        }
     }
 
     @Override

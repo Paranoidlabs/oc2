@@ -2,50 +2,46 @@
 
 package li.cil.oc2.common.network.message;
 
+import li.cil.oc2.api.API;
 import li.cil.oc2.common.blockentity.KeyboardBlockEntity;
 import li.cil.oc2.common.network.MessageUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.network.NetworkEvent;
+import net.minecraft.resources.ResourceLocation;
+import net.neoforged.neoforge.network.handling.PlayPayloadContext;
 
-public final class KeyboardInputMessage extends AbstractMessage {
-    private BlockPos pos;
-    private int keycode;
-    private boolean isDown;
+public record KeyboardInputMessage(BlockPos pos, int keycode, boolean isDown) implements CustomMessage {
 
-    ///////////////////////////////////////////////////////////////////
+    public static final ResourceLocation ID = new ResourceLocation(API.MOD_ID, "keyboard_input");
 
     public KeyboardInputMessage(final KeyboardBlockEntity keyboard, final int keycode, final boolean isDown) {
-        this.pos = keyboard.getBlockPos();
-        this.keycode = keycode;
-        this.isDown = isDown;
+        this(keyboard.getBlockPos(), keycode, isDown);
     }
 
     public KeyboardInputMessage(final FriendlyByteBuf buffer) {
-        super(buffer);
-    }
-
-    ///////////////////////////////////////////////////////////////////
-
-    @Override
-    public void fromBytes(final FriendlyByteBuf buffer) {
-        pos = buffer.readBlockPos();
-        keycode = buffer.readVarInt();
-        isDown = buffer.readBoolean();
+        this(buffer.readBlockPos(), buffer.readVarInt(), buffer.readBoolean());
     }
 
     @Override
-    public void toBytes(final FriendlyByteBuf buffer) {
+    public void write(final FriendlyByteBuf buffer) {
         buffer.writeBlockPos(pos);
         buffer.writeVarInt(keycode);
         buffer.writeBoolean(isDown);
     }
 
-    ///////////////////////////////////////////////////////////////////
+    @Override
+    public ResourceLocation id() {
+        return ID;
+    }
 
     @Override
-    protected void handleMessage(final NetworkEvent.Context context) {
+    public void handleClientSide(PlayPayloadContext context) {
+
+    }
+
+    @Override
+    public void handleServerSide(PlayPayloadContext context) {
         MessageUtils.withNearbyServerBlockEntityForInteraction(context, pos, KeyboardBlockEntity.class,
-            (player, keyboard) -> keyboard.handleInput(keycode, isDown));
+                (player, keyboard) -> keyboard.handleInput(keycode, isDown));
     }
 }

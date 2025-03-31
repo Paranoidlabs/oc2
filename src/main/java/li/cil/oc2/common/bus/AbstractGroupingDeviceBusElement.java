@@ -134,8 +134,7 @@ public abstract class AbstractGroupingDeviceBusElement<TEntry extends AbstractGr
         scanDevices();
     }
 
-    protected final void setEntriesForGroup(final int index, final QueryResult queryResult) {
-        final Set<TEntry> newEntries = queryResult.getEntries();
+    protected final void setEntriesForGroup(final int index, final Set<TEntry> newEntries) {
         final HashSet<TEntry> entries = groups.get(index);
         if (Objects.equals(newEntries, entries)) {
             if (entries.isEmpty()) {
@@ -150,7 +149,7 @@ public abstract class AbstractGroupingDeviceBusElement<TEntry extends AbstractGr
                         final String dataKey = iterator.next();
                         if (devicesTag.contains(dataKey, NBTTagIds.TAG_COMPOUND)) {
                             final CompoundTag tag = devicesTag.getCompound(dataKey);
-                            onEntryRemoved(dataKey, tag, queryResult.getQuery());
+                            onEntryRemoved(dataKey, tag);
                         }
                         iterator.remove();
                     }
@@ -201,11 +200,10 @@ public abstract class AbstractGroupingDeviceBusElement<TEntry extends AbstractGr
             });
         }
 
-        final TQuery query = queryResult.getQuery();
         for (final String invalidDataKey : invalidDataKeys) {
             if (devicesTag.contains(invalidDataKey, NBTTagIds.TAG_COMPOUND)) {
                 final CompoundTag tag = devicesTag.getCompound(invalidDataKey);
-                onEntryRemoved(invalidDataKey, tag, query);
+                onEntryRemoved(invalidDataKey, tag);
             }
             devicesTag.remove(invalidDataKey);
         }
@@ -235,7 +233,7 @@ public abstract class AbstractGroupingDeviceBusElement<TEntry extends AbstractGr
     protected void onEntryRemoved(final TEntry entry) {
     }
 
-    protected void onEntryRemoved(final String dataKey, final CompoundTag data, @Nullable final TQuery query) {
+    protected void onEntryRemoved(final String dataKey, final CompoundTag data) {
     }
 
     ///////////////////////////////////////////////////////////////////

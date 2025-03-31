@@ -2,45 +2,43 @@
 
 package li.cil.oc2.common.network.message;
 
+import li.cil.manual.api.util.Constants;
 import li.cil.oc2.common.container.NetworkTunnelContainer;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraftforge.network.NetworkEvent;
+import net.neoforged.neoforge.network.handling.PlayPayloadContext;
 
-public final class NetworkTunnelLinkMessage extends AbstractMessage {
-    private int containerId;
+public record NetworkTunnelLinkMessage(int containerId) implements CustomMessage {
 
-    ///////////////////////////////////////////////////////////////////
-
-    public NetworkTunnelLinkMessage(final int containerId) {
-        this.containerId = containerId;
-    }
+    public static final ResourceLocation ID = new ResourceLocation(Constants.MOD_ID, "network_tunnel_link");
 
     public NetworkTunnelLinkMessage(final FriendlyByteBuf buffer) {
-        super(buffer);
-    }
-
-    ///////////////////////////////////////////////////////////////////
-
-    @Override
-    public void fromBytes(final FriendlyByteBuf buffer) {
-        containerId = buffer.readVarInt();
+        this(buffer.readVarInt());
     }
 
     @Override
-    public void toBytes(final FriendlyByteBuf buffer) {
+    public void write(final FriendlyByteBuf buffer) {
         buffer.writeVarInt(containerId);
     }
 
-    ///////////////////////////////////////////////////////////////////
+    @Override
+    public ResourceLocation id() {
+        return ID;
+    }
 
     @Override
-    protected void handleMessage(final NetworkEvent.Context context) {
-        final ServerPlayer player = context.getSender();
-        if (player == null) {
+    public void handleClientSide(PlayPayloadContext context) {
+
+    }
+
+    @Override
+    public void handleServerSide(PlayPayloadContext context) {
+        if (context.player().isEmpty()) {
             return;
         }
+        final Player player = context.player().get();
 
         final AbstractContainerMenu container = player.containerMenu;
         if (container.containerId != containerId) {

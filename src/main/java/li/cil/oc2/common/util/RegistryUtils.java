@@ -9,9 +9,8 @@ import li.cil.oc2.api.bus.device.provider.ItemDeviceProvider;
 import li.cil.oc2.common.bus.device.provider.ProviderRegistry;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.IForgeRegistry;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.registries.DeferredRegister;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +27,7 @@ public abstract class RegistryUtils {
     private static final List<DeferredRegister<?>> ENTRIES = new ArrayList<>();
     private static Phase phase = Phase.PRE_INIT;
 
-    public static <T extends IForgeRegistry<T>> DeferredRegister<T> getInitializerFor(final ResourceKey<Registry<T>> key) {
+    public static <T extends Registry<T>> DeferredRegister<T> getInitializerFor(final ResourceKey<Registry<T>> key) {
         if (phase != Phase.INIT) throw new IllegalStateException();
 
         final DeferredRegister<T> entry = DeferredRegister.create(key, API.MOD_ID);
@@ -36,7 +35,7 @@ public abstract class RegistryUtils {
         return entry;
     }
 
-    public static <T extends IForgeRegistry<T>> DeferredRegister<T> getInitializerFor(final IForgeRegistry<T> registry) {
+    public static <T extends Registry<T>> DeferredRegister<T> getInitializerFor(final Registry<T> registry) {
         if (phase != Phase.INIT) throw new IllegalStateException();
 
         final DeferredRegister<T> entry = DeferredRegister.create(registry, API.MOD_ID);
@@ -49,12 +48,12 @@ public abstract class RegistryUtils {
         phase = Phase.INIT;
     }
 
-    public static void finish() {
+    public static void finish(IEventBus modEventBus) {
         if (phase != Phase.INIT) throw new IllegalStateException();
         phase = Phase.POST_INIT;
 
         for (final DeferredRegister<?> register : ENTRIES) {
-            register.register(FMLJavaModLoadingContext.get().getModEventBus());
+            register.register(modEventBus);
         }
 
         ENTRIES.clear();
@@ -69,11 +68,11 @@ public abstract class RegistryUtils {
             return Optional.empty();
         }
         String providerName = null;
-        if (BlockDeviceProvider.class.isAssignableFrom(registryEntry.getClass())) {
-            providerName = ProviderRegistry.BLOCK_DEVICE_PROVIDER_REGISTRY.get().getRegistryName().toString();
+        /*if (BlockDeviceProvider.class.isAssignableFrom(registryEntry.getClass())) {
+            providerName = ProviderRegistry.BLOCK_DEVICE_PROVIDER_REGISTRY.getRegistryName().toString();
         } else if (ItemDeviceProvider.class.isAssignableFrom(registryEntry.getClass())) {
-            providerName = ProviderRegistry.ITEM_DEVICE_PROVIDER_REGISTRY.get().getRegistryName().toString();
-        }
+            providerName = ProviderRegistry.ITEM_DEVICE_PROVIDER_REGISTRY.getRegistryName().toString();
+        }*/
 
         if(providerName == null) {
             return Optional.empty();

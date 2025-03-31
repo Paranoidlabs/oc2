@@ -2,48 +2,47 @@
 
 package li.cil.oc2.common.network.message;
 
+import li.cil.oc2.api.API;
 import li.cil.oc2.common.blockentity.DiskDriveBlockEntity;
 import li.cil.oc2.common.network.MessageUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.network.NetworkEvent;
+import net.neoforged.neoforge.network.handling.PlayPayloadContext;
 
-public final class DiskDriveFloppyMessage extends AbstractMessage {
-    private BlockPos pos;
-    private CompoundTag data;
+public record DiskDriveFloppyMessage(BlockPos pos, CompoundTag data) implements CustomMessage {
 
-    ///////////////////////////////////////////////////////////////////
+    public static final ResourceLocation ID = new ResourceLocation(API.MOD_ID, "disk_drive_floppy");
 
     public DiskDriveFloppyMessage(final DiskDriveBlockEntity diskDrive) {
-        this.pos = diskDrive.getBlockPos();
-        this.data = diskDrive.getFloppy().serializeNBT();
+        this(diskDrive.getBlockPos(), diskDrive.getFloppy().getTag());
     }
 
     public DiskDriveFloppyMessage(final FriendlyByteBuf buffer) {
-        super(buffer);
-    }
-
-    ///////////////////////////////////////////////////////////////////
-
-    @Override
-    public void fromBytes(final FriendlyByteBuf buffer) {
-        pos = buffer.readBlockPos();
-        data = buffer.readNbt();
+        this(buffer.readBlockPos(), buffer.readNbt());
     }
 
     @Override
-    public void toBytes(final FriendlyByteBuf buffer) {
+    public ResourceLocation id() {
+        return ID;
+    }
+
+    @Override
+    public void write(final FriendlyByteBuf buffer) {
         buffer.writeBlockPos(pos);
         buffer.writeNbt(data);
     }
 
-    ///////////////////////////////////////////////////////////////////
+    @Override
+    public void handleClientSide(PlayPayloadContext context) {
+        MessageUtils.withClientBlockEntityAt(pos, DiskDriveBlockEntity.class,
+                diskDrive -> diskDrive.setFloppyClient(ItemStack.of(data)));
+    }
 
     @Override
-    protected void handleMessage(final NetworkEvent.Context context) {
-        MessageUtils.withClientBlockEntityAt(pos, DiskDriveBlockEntity.class,
-            diskDrive -> diskDrive.setFloppyClient(ItemStack.of(data)));
+    public void handleServerSide(PlayPayloadContext context) {
+
     }
 }

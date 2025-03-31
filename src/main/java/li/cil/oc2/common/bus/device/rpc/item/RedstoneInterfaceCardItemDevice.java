@@ -8,7 +8,6 @@ import li.cil.oc2.api.bus.device.object.Parameter;
 import li.cil.oc2.api.capabilities.RedstoneEmitter;
 import li.cil.oc2.api.util.Side;
 import li.cil.oc2.common.Constants;
-import li.cil.oc2.common.capabilities.Capabilities;
 import li.cil.oc2.common.util.HorizontalBlockUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -18,14 +17,12 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ICapabilityProvider;
-import net.minecraftforge.common.util.LazyOptional;
+import net.neoforged.neoforge.capabilities.ICapabilityProvider;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public final class RedstoneInterfaceCardItemDevice extends AbstractItemRPCDevice implements DocumentedDevice, ICapabilityProvider {
+public final class RedstoneInterfaceCardItemDevice extends AbstractItemRPCDevice implements DocumentedDevice {
     private static final String OUTPUT_TAG_NAME = "output";
 
     private static final String GET_REDSTONE_INPUT = "getRedstoneInput";
@@ -54,17 +51,6 @@ public final class RedstoneInterfaceCardItemDevice extends AbstractItemRPCDevice
     }
 
     ///////////////////////////////////////////////////////////////////
-
-    @Nonnull
-    @Override
-    public <T> LazyOptional<T> getCapability(@Nonnull final Capability<T> capability, @Nullable final Direction side) {
-        if (capability == Capabilities.redstoneEmitter() && side != null) {
-            final int index = side.get3DDataValue();
-            return LazyOptional.of(() -> capabilities[index]).cast();
-        }
-
-        return LazyOptional.empty();
-    }
 
     @Override
     public CompoundTag serializeNBT() {

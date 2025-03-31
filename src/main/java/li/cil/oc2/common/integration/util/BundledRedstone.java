@@ -1,6 +1,5 @@
 package li.cil.oc2.common.integration.util;
 
-import li.cil.oc2.common.integration.projectred.BundledCableHandler;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
@@ -11,7 +10,7 @@ import javax.annotation.Nullable;
 public class BundledRedstone {
     private static BundledRedstone INSTANCE = null;
 
-    private BundledCableHandler handler = null;
+    private IBundledCableHandler handler = null;
 
     private BundledRedstone() { }
 
@@ -23,7 +22,7 @@ public class BundledRedstone {
         return INSTANCE;
     }
 
-    public void register(BundledCableHandler handler) {
+    public void register(IBundledCableHandler handler) {
         this.handler = handler;
     }
 
@@ -38,5 +37,9 @@ public class BundledRedstone {
         } else {
             return null;
         }
+    }
+
+    public interface IBundledCableHandler {
+        byte[] getBundledInput(Level level, BlockPos blockPos, Direction side);
     }
 }

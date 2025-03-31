@@ -2,45 +2,41 @@
 
 package li.cil.oc2.common.network.message;
 
+import li.cil.oc2.api.API;
 import li.cil.oc2.common.bus.device.rpc.item.FileImportExportCardItemDevice;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraftforge.network.NetworkEvent;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.player.Player;
+import net.neoforged.neoforge.network.handling.PlayPayloadContext;
 
-import java.util.function.Supplier;
+public record ServerCanceledImportFileMessage(int file_id) implements CustomMessage {
 
-public final class ServerCanceledImportFileMessage extends AbstractMessage {
-    private int id;
-
-    ///////////////////////////////////////////////////////////////////
-
-    public ServerCanceledImportFileMessage(final int id) {
-        this.id = id;
-    }
+    public static final ResourceLocation ID = new ResourceLocation(API.MOD_ID, "server_canceled_import_file");
 
     public ServerCanceledImportFileMessage(final FriendlyByteBuf buffer) {
-        super(buffer);
-    }
-
-    ///////////////////////////////////////////////////////////////////
-
-    @Override
-    public void fromBytes(final FriendlyByteBuf buffer) {
-        id = buffer.readVarInt();
+        this(buffer.readVarInt());
     }
 
     @Override
-    public void toBytes(final FriendlyByteBuf buffer) {
-        buffer.writeVarInt(id);
+    public void write(final FriendlyByteBuf buffer) {
+        buffer.writeVarInt(file_id);
     }
 
-    ///////////////////////////////////////////////////////////////////
+    @Override
+    public ResourceLocation id() {
+        return ID;
+    }
 
     @Override
-    protected void handleMessage(final Supplier<NetworkEvent.Context> context) {
-        final ServerPlayer player = context.get().getSender();
-        if (player != null) {
-            FileImportExportCardItemDevice.cancelImport(player, id);
+    public void handleClientSide(PlayPayloadContext context) {
+
+    }
+
+    @Override
+    public void handleServerSide(PlayPayloadContext context) {
+        if (context.player().isPresent()) {
+            final Player player = context.player().get();
+            FileImportExportCardItemDevice.cancelImport(player, file_id);
         }
     }
 }

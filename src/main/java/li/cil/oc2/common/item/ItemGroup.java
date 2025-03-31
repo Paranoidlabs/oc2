@@ -8,14 +8,16 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.registries.DeferredRegister;
+
+import java.util.function.Supplier;
 
 public final class ItemGroup {
     public static final DeferredRegister<CreativeModeTab> TAB_REGISTER = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, API.MOD_ID);
 
     @SuppressWarnings("unused")
-    public static final RegistryObject<CreativeModeTab> COMMON_TAB = TAB_REGISTER.register("common", () -> CreativeModeTab.builder()
+    public static final Supplier<CreativeModeTab> COMMON_TAB = TAB_REGISTER.register("common", () -> CreativeModeTab.builder()
         // Set name of tab to display
         .title(Component.translatable("item_group." + API.MOD_ID + ".common"))
         // Set icon of creative tab
@@ -80,4 +82,8 @@ public final class ItemGroup {
         })
         .build()
     );
+
+    public static void initialize(IEventBus modEventBus) {
+            TAB_REGISTER.register(modEventBus);
+    }
 }

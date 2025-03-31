@@ -4,12 +4,13 @@ package li.cil.oc2.common.util;
 
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.LevelAccessor;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.server.ServerStoppedEvent;
-import net.minecraftforge.event.level.ChunkEvent;
-import net.minecraftforge.event.level.LevelEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.TickEvent;
+import net.neoforged.neoforge.event.level.ChunkEvent;
+import net.neoforged.neoforge.event.level.LevelEvent;
+import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -23,8 +24,8 @@ public final class ServerScheduler {
 
     ///////////////////////////////////////////////////////////////////
 
-    public static void initialize() {
-        MinecraftForge.EVENT_BUS.register(EventHandler.class);
+    public static void initialize(IEventBus modEventBus) {
+        NeoForge.EVENT_BUS.register(EventHandler.class);
     }
 
     public static void schedule(final Runnable runnable) {

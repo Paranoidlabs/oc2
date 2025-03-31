@@ -2,53 +2,40 @@
 
 package li.cil.oc2.common.network.message;
 
+import li.cil.oc2.api.API;
 import li.cil.oc2.common.bus.device.rpc.item.FileImportExportCardItemDevice;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.network.NetworkEvent;
+import net.minecraft.resources.ResourceLocation;
+import net.neoforged.neoforge.network.handling.PlayPayloadContext;
 
-import java.util.function.Supplier;
-
-public final class ImportedFileMessage extends AbstractMessage {
+public record ImportedFileMessage(int file_id, String name, byte[] data) implements CustomMessage {
     private static final int MAX_NAME_LENGTH = 256;
 
-    ///////////////////////////////////////////////////////////////////
-
-    private int id;
-    private String name;
-    private byte[] data;
-
-    ///////////////////////////////////////////////////////////////////
-
-    public ImportedFileMessage(final int id, final String name, final byte[] data) {
-        this.id = id;
-        this.name = name;
-        this.data = data;
-    }
+    public static final ResourceLocation ID = new ResourceLocation(API.MOD_ID, "imported_file");
 
     public ImportedFileMessage(final FriendlyByteBuf buffer) {
-        super(buffer);
-    }
-
-    ///////////////////////////////////////////////////////////////////
-
-    @Override
-    public void fromBytes(final FriendlyByteBuf buffer) {
-        id = buffer.readVarInt();
-        name = buffer.readUtf(MAX_NAME_LENGTH);
-        data = buffer.readByteArray();
+        this(buffer.readInt(), buffer.readUtf(MAX_NAME_LENGTH), buffer.readByteArray());
     }
 
     @Override
-    public void toBytes(final FriendlyByteBuf buffer) {
-        buffer.writeVarInt(id);
+    public void write(final FriendlyByteBuf buffer) {
+        buffer.writeVarInt(file_id);
         buffer.writeUtf(name, MAX_NAME_LENGTH);
         buffer.writeByteArray(data);
     }
 
-    ///////////////////////////////////////////////////////////////////
+    @Override
+    public ResourceLocation id() {
+        return ID;
+    }
 
     @Override
-    protected void handleMessage(final Supplier<NetworkEvent.Context> context) {
-        FileImportExportCardItemDevice.setImportedFile(id, name, data);
+    public void handleClientSide(PlayPayloadContext context) {
+        FileImportExportCardItemDevice.setImportedFile(file_id, name, data);
+    }
+
+    @Override
+    public void handleServerSide(PlayPayloadContext context) {
+        FileImportExportCardItemDevice.setImportedFile(file_id, name, data);
     }
 }

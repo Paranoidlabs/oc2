@@ -5,6 +5,10 @@ package li.cil.oc2.client.renderer.blockentity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
+import net.minecraft.world.phys.AABB;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.client.extensions.IBlockEntityRendererExtension;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector4f;
@@ -18,11 +22,8 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.core.Direction;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.fml.common.Mod;
 
-@Mod.EventBusSubscriber(value = Dist.CLIENT, modid = API.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
-public final class ProjectorRenderer implements BlockEntityRenderer<ProjectorBlockEntity> {
+public final class ProjectorRenderer implements BlockEntityRenderer<ProjectorBlockEntity>, IBlockEntityRendererExtension<ProjectorBlockEntity> {
     private static final int LIGHT_COLOR_NEAR = 0x22FFFFFF;
     private static final int LIGHT_COLOR_FAR = 0x00FFFFFF;
     private static final int LENS_COLOR = 0xDDFFFFFF;
@@ -162,5 +163,10 @@ public final class ProjectorRenderer implements BlockEntityRenderer<ProjectorBlo
         consumer.vertex(matrix, ledLeft, ledBottom, ledDepth).color(LED_COLOR).endVertex();
         consumer.vertex(matrix, ledLeft, ledTop, ledDepth).color(LED_COLOR).endVertex();
         consumer.vertex(matrix, ledRight, ledTop, ledDepth).color(LED_COLOR).endVertex();
+    }
+
+    @Override
+    public AABB getRenderBoundingBox(ProjectorBlockEntity blockEntity) {
+        return blockEntity.getRenderBoundingBox();
     }
 }

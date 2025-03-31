@@ -2,51 +2,39 @@
 
 package li.cil.oc2.common.network.message;
 
+import li.cil.oc2.api.API;
 import li.cil.oc2.client.gui.FileChooserScreen;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.network.NetworkEvent;
+import net.minecraft.resources.ResourceLocation;
+import net.neoforged.neoforge.network.handling.PlayPayloadContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.nio.file.Files;
 
-public final class ExportedFileMessage extends AbstractMessage {
+public record ExportedFileMessage(String name, byte[] data) implements CustomMessage {
     private static final Logger LOGGER = LogManager.getLogger();
 
-    ///////////////////////////////////////////////////////////////////
-
-    private String name;
-    private byte[] data;
-
-    ///////////////////////////////////////////////////////////////////
-
-    public ExportedFileMessage(final String name, final byte[] data) {
-        this.name = name;
-        this.data = data;
-    }
+    public static final ResourceLocation ID = new ResourceLocation(API.MOD_ID, "exported_file");
 
     public ExportedFileMessage(final FriendlyByteBuf buffer) {
-        super(buffer);
-    }
-
-    ///////////////////////////////////////////////////////////////////
-
-    @Override
-    public void fromBytes(final FriendlyByteBuf buffer) {
-        name = buffer.readUtf();
-        data = buffer.readByteArray();
+        this(buffer.readUtf(), buffer.readByteArray());
     }
 
     @Override
-    public void toBytes(final FriendlyByteBuf buffer) {
+    public ResourceLocation id() {
+        return ID;
+    }
+
+    @Override
+    public void write(final FriendlyByteBuf buffer) {
         buffer.writeUtf(name);
         buffer.writeByteArray(data);
     }
 
-    ///////////////////////////////////////////////////////////////////
-
-    protected void handleMessage(final NetworkEvent.Context context) {
+    @Override
+    public void handleClientSide(PlayPayloadContext context) {
         FileChooserScreen.openFileChooserForSave(name, path -> {
             try {
                 Files.write(path, data);
@@ -54,5 +42,10 @@ public final class ExportedFileMessage extends AbstractMessage {
                 LOGGER.error(e);
             }
         });
+    }
+
+    @Override
+    public void handleServerSide(PlayPayloadContext context) {
+
     }
 }

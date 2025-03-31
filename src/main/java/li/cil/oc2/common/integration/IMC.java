@@ -6,9 +6,9 @@ import li.cil.oc2.api.API;
 import li.cil.oc2.api.imc.RPCMethodParameterTypeAdapter;
 import li.cil.oc2.common.bus.device.rpc.RPCMethodParameterTypeAdapters;
 import net.minecraft.Util;
-import net.minecraftforge.fml.InterModComms;
-import net.minecraftforge.fml.event.lifecycle.InterModProcessEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.InterModComms;
+import net.neoforged.fml.event.lifecycle.InterModProcessEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -29,8 +29,8 @@ public final class IMC {
 
     ///////////////////////////////////////////////////////////////////
 
-    public static void initialize() {
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(IMC::handleIMCMessages);
+    public static void initialize(IEventBus modEventBus) {
+        modEventBus.addListener(IMC::handleIMCMessages);
     }
 
     ///////////////////////////////////////////////////////////////////

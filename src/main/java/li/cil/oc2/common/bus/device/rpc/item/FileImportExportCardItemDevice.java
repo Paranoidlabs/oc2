@@ -118,7 +118,7 @@ public final class FileImportExportCardItemDevice extends AbstractItemRPCDevice 
         }
     }
 
-    public static void cancelImport(final ServerPlayer player, final int id) {
+    public static void cancelImport(final Player player, final int id) {
         synchronized (importingDevices) {
             final ImportFileRequest request = importingDevices.get(id);
             if (request != null) {

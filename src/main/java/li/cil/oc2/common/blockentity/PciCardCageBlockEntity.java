@@ -5,7 +5,6 @@ package li.cil.oc2.common.blockentity;
 import li.cil.oc2.common.Config;
 import li.cil.oc2.common.block.PciCardCageBlock;
 import li.cil.oc2.common.bus.device.vm.block.PciCardCageDevice;
-import li.cil.oc2.common.capabilities.Capabilities;
 import li.cil.oc2.common.energy.FixedEnergyStorage;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -100,23 +99,5 @@ public final class PciCardCageBlockEntity extends ModBlockEntity implements Tick
         super.setBlockState(state);
 
     }
-
-    ///////////////////////////////////////////////////////////////
-
-    @Override
-    protected void collectCapabilities(final CapabilityCollector collector, @Nullable final Direction direction) {
-        if (Config.cardCagesUseEnergy()) {
-            collector.offer(Capabilities.energyStorage(), energy);
-        }
-
-        if (direction == getBlockState().getValue(PciCardCageBlock.FACING).getOpposite()) {
-            collector.offer(Capabilities.device(), cardCageDevice);
-        }
-    }
-
-    ///////////////////////////////////////////////////////////////
-
-
-
 
 }

@@ -7,7 +7,7 @@ import li.cil.oc2.api.bus.DeviceBusController;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraftforge.common.util.INBTSerializable;
+import net.neoforged.neoforge.common.util.INBTSerializable;
 
 /**
  * Base interface for objects that can be registered as devices on a {@link DeviceBus}.

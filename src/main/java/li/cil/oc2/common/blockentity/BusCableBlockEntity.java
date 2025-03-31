@@ -3,7 +3,6 @@
 package li.cil.oc2.common.blockentity;
 
 import li.cil.oc2.api.bus.DeviceBus;
-import li.cil.oc2.api.bus.DeviceBusElement;
 import li.cil.oc2.client.model.BusCableBakedModel;
 import li.cil.oc2.common.Config;
 import li.cil.oc2.common.Constants;
@@ -16,7 +15,6 @@ import li.cil.oc2.common.network.Network;
 import li.cil.oc2.common.network.message.BusCableFacadeMessage;
 import li.cil.oc2.common.network.message.BusInterfaceNameMessage;
 import li.cil.oc2.common.util.ItemStackUtils;
-import li.cil.oc2.common.util.LevelUtils;
 import li.cil.oc2.common.util.NBTTagIds;
 import li.cil.oc2.common.util.ServerScheduler;
 import net.minecraft.client.Minecraft;
@@ -36,15 +34,14 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.RenderShape;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
-import net.minecraftforge.client.model.data.ModelData;
-import net.minecraftforge.common.util.LazyOptional;
+import net.neoforged.neoforge.client.model.data.ModelData;
 
 import javax.annotation.Nullable;
 import java.util.HashSet;
 import java.util.Objects;
+import java.util.Optional;
 
 import static java.util.Objects.requireNonNull;
 import static li.cil.oc2.client.model.BusCableBakedModel.*;
@@ -102,7 +99,7 @@ public final class BusCableBlockEntity extends ModBlockEntity {
         setChanged();
 
         if (!level.isClientSide()) {
-            final BusInterfaceNameMessage message = new BusInterfaceNameMessage.ToClient(this, side, interfaceNames[side.get3DDataValue()]);
+            final BusInterfaceNameMessage message = new BusInterfaceNameMessage(this.getBlockPos(), side, interfaceNames[side.get3DDataValue()]);
             Network.sendToClientsTrackingBlockEntity(message, this);
             busElement.updateDevicesForNeighbor(side);
         }
@@ -195,7 +192,7 @@ public final class BusCableBlockEntity extends ModBlockEntity {
             // we can just do this.
             setInterfaceName(side, "");
 
-            invalidateCapability(Capabilities.deviceBusElement(), side);
+            level.invalidateCapabilities(getBlockPos());
 
             final NeighborTracker tracker = neighborTrackers[side.get3DDataValue()];
             tracker.updateListener();
@@ -262,7 +259,7 @@ public final class BusCableBlockEntity extends ModBlockEntity {
         final CompoundTag tag = super.getUpdateTag();
 
         tag.put(INTERFACE_NAMES_TAG_NAME, serializeInterfaceNames());
-        tag.put(FACADE_TAG_NAME, facade.serializeNBT());
+        //tag.put(FACADE_TAG_NAME, facade.serializeNBT());
 
         return tag;
     }
@@ -279,7 +276,7 @@ public final class BusCableBlockEntity extends ModBlockEntity {
 
         tag.put(BUS_ELEMENT_TAG_NAME, busElement.save());
         tag.put(INTERFACE_NAMES_TAG_NAME, serializeInterfaceNames());
-        tag.put(FACADE_TAG_NAME, facade.serializeNBT());
+        //tag.put(FACADE_TAG_NAME, facade.serializeNBT());
     }
 
     @Override
@@ -293,13 +290,6 @@ public final class BusCableBlockEntity extends ModBlockEntity {
     }
 
     ///////////////////////////////////////////////////////////////////
-
-    @Override
-    protected void collectCapabilities(final CapabilityCollector collector, @Nullable final Direction direction) {
-        if (BusCableBlock.getConnectionType(getBlockState(), direction) != BusCableBlock.ConnectionType.NONE) {
-            collector.offer(Capabilities.deviceBusElement(), busElement);
-        }
-    }
 
     @Override
     protected void loadServer() {
@@ -361,15 +351,8 @@ public final class BusCableBlockEntity extends ModBlockEntity {
             final Level level = requireNonNull(getLevel());
             final BlockPos pos = getBlockPos();
             for (final Direction direction : Constants.DIRECTIONS) {
-                final BlockPos neighborPos = pos.relative(direction);
-                final BlockEntity blockEntity = LevelUtils.getBlockEntityIfChunkExists(level, neighborPos);
-                if (blockEntity == null) {
-                    continue;
-                }
-
-                final LazyOptional<DeviceBusElement> capability = blockEntity
-                    .getCapability(Capabilities.deviceBusElement(), direction.getOpposite());
-                capability.ifPresent(DeviceBus::scheduleScan);
+                var cap = Optional.ofNullable(level.getCapability(Capabilities.DeviceBus.BLOCK, pos.relative(direction), direction.getOpposite()));
+                cap.ifPresent(DeviceBus::scheduleScan);
             }
         });
     }

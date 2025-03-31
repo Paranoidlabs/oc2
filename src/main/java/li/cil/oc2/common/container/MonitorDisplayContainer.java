@@ -12,12 +12,11 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraftforge.energy.IEnergyStorage;
-import net.minecraftforge.network.NetworkHooks;
+import net.neoforged.neoforge.energy.IEnergyStorage;
 
 public final class MonitorDisplayContainer extends AbstractMonitorContainer {
     public static void createServer(final MonitorBlockEntity monitor, final IEnergyStorage energy, final ServerPlayer player) {
-        NetworkHooks.openScreen(player, new MenuProvider() {
+        player.openMenu(new MenuProvider() {
             @Override
             public Component getDisplayName() {
                 return Component.translatable(monitor.getBlockState().getBlock().getDescriptionId());

@@ -6,10 +6,8 @@ import li.cil.oc2.api.bus.DeviceBusController;
 import li.cil.oc2.api.bus.DeviceBusElement;
 import li.cil.oc2.api.bus.device.Device;
 import li.cil.oc2.common.util.Event;
-import li.cil.oc2.common.util.LazyOptionalUtils;
 import li.cil.oc2.common.util.ParameterizedEvent;
 import li.cil.oc2.common.util.TickUtils;
-import net.minecraftforge.common.util.LazyOptional;
 
 import java.time.Duration;
 import java.util.*;
@@ -175,8 +173,8 @@ public class CommonDeviceBusController implements DeviceBusController {
             for (final DeviceBusElement element : addedElements) {
                 // Rescan if any bus element gets invalidated. Don't have bus elements keep this instance alive,
                 // only notify us on change if we still exist.
-                LazyOptionalUtils.addWeakListener(optionals.get(element), this,
-                    (controller, ignored) -> controller.scheduleBusScan(ScanReason.BUS_CHANGE));
+                /*LazyOptionalUtils.addWeakListener(optionals.get(element), this,
+                    (controller, ignored) -> controller.scheduleBusScan(ScanReason.BUS_CHANGE));*/
             }
 
             scanDevices();
@@ -227,11 +225,13 @@ public class CommonDeviceBusController implements DeviceBusController {
         scanDevices();
     }
 
-    private Optional<HashMap<DeviceBusElement, LazyOptional<DeviceBusElement>>> collectBusElements() {
+    private Optional<HashMap<DeviceBusElement, DeviceBusElement>> collectBusElements() {
         final HashSet<DeviceBusElement> closed = new HashSet<>();
         final Stack<DeviceBusElement> open = new Stack<>();
-        final HashMap<DeviceBusElement, LazyOptional<DeviceBusElement>> optionals = new HashMap<>();
+        final HashMap<DeviceBusElement, DeviceBusElement> optionals = new HashMap<>();
 
+        // TODO
+        /*
         closed.add(root);
         open.add(root);
         optionals.put(root, LazyOptional.empty()); // Needed because we only return this map.
@@ -267,6 +267,8 @@ public class CommonDeviceBusController implements DeviceBusController {
         }
 
         return Optional.of(optionals);
+         */
+        return Optional.empty();
     }
 
     private HashSet<DeviceBusElement> updateElements(final Set<DeviceBusElement> newElements) {

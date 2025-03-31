@@ -2,52 +2,47 @@
 
 package li.cil.oc2.common.network.message;
 
+import li.cil.oc2.api.API;
 import li.cil.oc2.common.blockentity.MonitorBlockEntity;
 import li.cil.oc2.common.network.MessageUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.network.NetworkEvent;
+import net.minecraft.resources.ResourceLocation;
+import net.neoforged.neoforge.network.handling.PlayPayloadContext;
 
 import java.nio.ByteBuffer;
 
-public final class MonitorFramebufferMessage extends AbstractMessage {
-    private BlockPos pos;
-    private ByteBuffer frame;
+public record MonitorFramebufferMessage(BlockPos pos, ByteBuffer frame) implements CustomMessage {
 
-    ///////////////////////////////////////////////////////////////////
-
-    public MonitorFramebufferMessage(final BlockPos projectorPos, final ByteBuffer frame) {
-        this.pos = projectorPos;
-        this.frame = frame;
-    }
+    public static final ResourceLocation ID = new ResourceLocation(API.MOD_ID, "monitor_framebuffer");
 
     public MonitorFramebufferMessage(final FriendlyByteBuf buffer) {
-        super(buffer);
-    }
-
-    ///////////////////////////////////////////////////////////////////
-
-    @Override
-    public void fromBytes(final FriendlyByteBuf buffer) {
-        pos = buffer.readBlockPos();
-        frame = ByteBuffer.allocateDirect(buffer.readVarInt());
+        this(buffer.readBlockPos(), ByteBuffer.allocateDirect(buffer.readVarInt()));
         buffer.readBytes(frame);
         frame.flip();
     }
 
     @Override
-    public void toBytes(final FriendlyByteBuf buffer) {
+    public void write(final FriendlyByteBuf buffer) {
         buffer.writeBlockPos(pos);
         buffer.writeVarInt(frame.limit());
         buffer.writeBytes(frame);
         frame.position(0);
     }
 
-    ///////////////////////////////////////////////////////////////////
+    @Override
+    public ResourceLocation id() {
+        return ID;
+    }
 
     @Override
-    protected void handleMessage(final NetworkEvent.Context context) {
+    public void handleClientSide(PlayPayloadContext context) {
         MessageUtils.withClientBlockEntityAt(pos, MonitorBlockEntity.class,
-            monitor -> monitor.applyNextFrameClient(frame));
+                monitor -> monitor.applyNextFrameClient(frame));
+    }
+
+    @Override
+    public void handleServerSide(PlayPayloadContext context) {
+
     }
 }

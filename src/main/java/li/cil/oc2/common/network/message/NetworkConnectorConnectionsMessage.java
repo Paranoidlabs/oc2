@@ -2,44 +2,39 @@
 
 package li.cil.oc2.common.network.message;
 
+import li.cil.manual.api.util.Constants;
 import li.cil.oc2.common.blockentity.NetworkConnectorBlockEntity;
 import li.cil.oc2.common.network.MessageUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.network.NetworkEvent;
+import net.minecraft.resources.ResourceLocation;
+import net.neoforged.neoforge.network.handling.PlayPayloadContext;
 
 import java.util.ArrayList;
 
-public final class NetworkConnectorConnectionsMessage extends AbstractMessage {
-    private BlockPos pos;
-    private ArrayList<BlockPos> connectedPositions;
+public record NetworkConnectorConnectionsMessage(BlockPos pos, ArrayList<BlockPos> connectedPositions) implements CustomMessage {
 
+    public static final ResourceLocation ID = new ResourceLocation(Constants.MOD_ID, "network_connector_connections");
     ///////////////////////////////////////////////////////////////////
 
     public NetworkConnectorConnectionsMessage(final NetworkConnectorBlockEntity networkConnector) {
-        this.pos = networkConnector.getBlockPos();
-        this.connectedPositions = new ArrayList<>(networkConnector.getConnectedPositions());
+        this(networkConnector.getBlockPos(), new ArrayList<>(networkConnector.getConnectedPositions()));
     }
 
     public NetworkConnectorConnectionsMessage(final FriendlyByteBuf buffer) {
-        super(buffer);
+        this(buffer.readBlockPos(), buffer.readVarInt(), buffer);
     }
 
-    ///////////////////////////////////////////////////////////////////
-
-    @Override
-    public void fromBytes(final FriendlyByteBuf buffer) {
-        pos = buffer.readBlockPos();
-        connectedPositions = new ArrayList<>();
-        final int positionCount = buffer.readVarInt();
-        for (int i = 0; i < positionCount; i++) {
-            final BlockPos pos = buffer.readBlockPos();
-            connectedPositions.add(pos);
+    public NetworkConnectorConnectionsMessage(final BlockPos pos, final int connectedCount, final FriendlyByteBuf buffer) {
+        this(pos, new ArrayList<>(connectedCount));
+        for (int i = 0; i < connectedCount; i++) {
+            final BlockPos p = buffer.readBlockPos();
+            connectedPositions.add(p);
         }
     }
 
     @Override
-    public void toBytes(final FriendlyByteBuf buffer) {
+    public void write(final FriendlyByteBuf buffer) {
         buffer.writeBlockPos(pos);
         buffer.writeVarInt(connectedPositions.size());
         for (final BlockPos pos : connectedPositions) {
@@ -47,11 +42,19 @@ public final class NetworkConnectorConnectionsMessage extends AbstractMessage {
         }
     }
 
-    ///////////////////////////////////////////////////////////////////
+    @Override
+    public ResourceLocation id() {
+        return ID;
+    }
 
     @Override
-    protected void handleMessage(final NetworkEvent.Context context) {
+    public void handleServerSide(PlayPayloadContext context) {
+
+    }
+
+    @Override
+    public void handleClientSide(PlayPayloadContext context) {
         MessageUtils.withClientBlockEntityAt(pos, NetworkConnectorBlockEntity.class,
-            networkConnector -> networkConnector.setConnectedPositionsClient(connectedPositions));
+                networkConnector -> networkConnector.setConnectedPositionsClient(connectedPositions));
     }
 }

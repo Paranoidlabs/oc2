@@ -6,7 +6,6 @@ import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.block.DiskDriveBlock;
 import li.cil.oc2.common.bus.device.vm.block.DiskDriveContainer;
 import li.cil.oc2.common.bus.device.vm.block.DiskDriveDevice;
-import li.cil.oc2.common.capabilities.Capabilities;
 import li.cil.oc2.common.container.TypedItemStackHandler;
 import li.cil.oc2.common.network.Network;
 import li.cil.oc2.common.network.message.DiskDriveFloppyMessage;
@@ -21,8 +20,8 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -85,7 +84,7 @@ public final class DiskDriveBlockEntity extends ModBlockEntity implements DiskDr
             ItemStackUtils.spawnAsEntity(level, getBlockPos().relative(facing), stack, facing).ifPresent(entity -> {
                 if (player != null) {
                     entity.setNoPickUpDelay();
-                    entity.setThrower(player.getUUID());
+                    entity.setThrower(player);
                 }
             });
         }
@@ -98,15 +97,6 @@ public final class DiskDriveBlockEntity extends ModBlockEntity implements DiskDr
     @OnlyIn(Dist.CLIENT)
     public void setFloppyClient(final ItemStack stack) {
         itemHandler.setStackInSlot(0, stack);
-    }
-
-    @Override
-    protected void collectCapabilities(final CapabilityCollector collector, @Nullable final Direction direction) {
-        collector.offer(Capabilities.itemHandler(), itemHandler);
-
-        if (direction == getBlockState().getValue(DiskDriveBlock.FACING).getOpposite()) {
-            collector.offer(Capabilities.device(), device);
-        }
     }
 
     @Override

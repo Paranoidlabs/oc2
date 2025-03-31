@@ -12,9 +12,15 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.level.block.Block;
-import net.minecraftforge.client.model.generators.*;
-import net.minecraftforge.common.data.ExistingFileHelper;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.neoforge.client.model.generators.BlockStateProvider;
+import net.neoforged.neoforge.client.model.generators.ItemModelBuilder;
+import net.neoforged.neoforge.client.model.generators.ModelFile;
+import net.neoforged.neoforge.client.model.generators.MultiPartBlockStateBuilder;
+import net.neoforged.neoforge.common.data.ExistingFileHelper;
+import net.neoforged.neoforge.registries.DeferredBlock;
+import net.neoforged.neoforge.registries.DeferredItem;
+
+import java.util.function.Supplier;
 
 public final class ModBlockStateProvider extends BlockStateProvider {
     private static final ResourceLocation CABLE_MODEL = new ResourceLocation(API.MOD_ID, "block/cable_base");
@@ -176,17 +182,17 @@ public final class ModBlockStateProvider extends BlockStateProvider {
             .end();
     }
 
-    private <T extends Block> ItemModelBuilder horizontalBlock(final RegistryObject<T> block, final RegistryObject<Item> item, final ResourceLocation modelFileLocation) {
+    private <T extends Block> ItemModelBuilder horizontalBlock(final DeferredBlock<T> block, final DeferredItem<Item> item, final ResourceLocation modelFileLocation) {
         horizontalBlock(block.get(), models().getExistingFile(modelFileLocation));
         return itemModels().getBuilder(item.getId().getPath()).parent(models().getExistingFile(block.getId()));
     }
 
-    private <T extends Block> ItemModelBuilder horizontalFaceBlock(final RegistryObject<T> block, final RegistryObject<Item> item, final ResourceLocation modelFileLocation) {
+    private <T extends Block> ItemModelBuilder horizontalFaceBlock(final DeferredBlock<T> block, final DeferredItem<Item> item, final ResourceLocation modelFileLocation) {
         horizontalFaceBlock(block.get(), models().getExistingFile(modelFileLocation));
         return itemModels().getBuilder(item.getId().getPath()).parent(models().getExistingFile(block.getId()));
     }
 
-    private <T extends Block> void simpleBlock(final RegistryObject<T> block, final RegistryObject<Item> item) {
+    private <T extends Block> void simpleBlock(final DeferredBlock<T> block, final DeferredItem<Item> item) {
         simpleBlock(block.get());
         itemModels().getBuilder(item.getId().getPath()).parent(models().getExistingFile(block.getId()));
     }

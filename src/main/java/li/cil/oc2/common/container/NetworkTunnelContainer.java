@@ -16,13 +16,12 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.network.NetworkHooks;
 
 import java.util.UUID;
 
 public final class NetworkTunnelContainer extends AbstractContainer {
     public static void createServer(final ServerPlayer player, final InteractionHand hand) {
-        NetworkHooks.openScreen(player, new MenuProvider() {
+        player.openMenu(new MenuProvider() {
             @Override
             public Component getDisplayName() {
                 return player.getItemInHand(hand).getItem().getDescription();
@@ -57,7 +56,7 @@ public final class NetworkTunnelContainer extends AbstractContainer {
         createPlayerInventoryAndHotbarSlots(player.getInventory(), 8, 115);
 
         addSlot(new LockedSlot(player.getInventory(), getHandSlot(), 80, 25));
-        addSlot(new DeviceTypeSlot(linkSlot, DeviceTypes.NETWORK_TUNNEL, 0, 80, 51));
+        addSlot(new DeviceTypeSlot(linkSlot, DeviceTypes.NETWORK_TUNNEL.get(), 0, 80, 51));
     }
 
     ///////////////////////////////////////////////////////////////////

@@ -2,43 +2,45 @@
 
 package li.cil.oc2.common.network.message;
 
+import li.cil.oc2.api.API;
 import li.cil.oc2.common.blockentity.ProjectorBlockEntity;
 import li.cil.oc2.common.network.MessageUtils;
 import li.cil.oc2.common.network.ProjectorLoadBalancer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.network.NetworkEvent;
+import net.minecraft.resources.ResourceLocation;
+import net.neoforged.neoforge.network.handling.PlayPayloadContext;
 
-public final class ProjectorRequestFramebufferMessage extends AbstractMessage {
-    private BlockPos pos;
+public record ProjectorRequestFramebufferMessage(BlockPos pos) implements CustomMessage {
 
-    ///////////////////////////////////////////////////////////////////
+    public static final ResourceLocation ID = new ResourceLocation(API.MOD_ID, "projector_request_framebuffer");
 
     public ProjectorRequestFramebufferMessage(final ProjectorBlockEntity projector) {
-        this.pos = projector.getBlockPos();
+        this(projector.getBlockPos());
     }
 
     public ProjectorRequestFramebufferMessage(final FriendlyByteBuf buffer) {
-        super(buffer);
-    }
-
-    ///////////////////////////////////////////////////////////////////
-
-    @Override
-    public void fromBytes(final FriendlyByteBuf buffer) {
-        pos = buffer.readBlockPos();
+        this(buffer.readBlockPos());
     }
 
     @Override
-    public void toBytes(final FriendlyByteBuf buffer) {
+    public void write(final FriendlyByteBuf buffer) {
         buffer.writeBlockPos(pos);
     }
 
-    ///////////////////////////////////////////////////////////////////
+    @Override
+    public ResourceLocation id() {
+        return ID;
+    }
 
     @Override
-    protected void handleMessage(final NetworkEvent.Context context) {
+    public void handleClientSide(PlayPayloadContext context) {
+
+    }
+
+    @Override
+    public void handleServerSide(PlayPayloadContext context) {
         MessageUtils.withNearbyServerBlockEntity(context, pos, ProjectorBlockEntity.class,
-            (player, projector) -> ProjectorLoadBalancer.updateWatcher(projector, player));
+                (player, projector) -> ProjectorLoadBalancer.updateWatcher(projector, player));
     }
 }

@@ -10,7 +10,7 @@ import li.cil.oc2.api.imc.RPCMethodParameterTypeAdapter;
 import java.lang.reflect.Type;
 
 public final class API {
-    public static final String MOD_ID = "oc2r";
+    public static final String MOD_ID = "oc2";
 
     ///////////////////////////////////////////////////////////////////
 

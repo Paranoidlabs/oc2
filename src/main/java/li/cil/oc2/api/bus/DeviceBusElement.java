@@ -4,7 +4,6 @@ package li.cil.oc2.api.bus;
 
 import li.cil.oc2.api.bus.device.Device;
 import li.cil.oc2.api.bus.device.rpc.RPCDevice;
-import net.minecraftforge.common.util.LazyOptional;
 
 import java.util.Collection;
 import java.util.Optional;
@@ -67,7 +66,7 @@ public interface DeviceBusElement extends DeviceBus {
      *
      * @return the adjacent bus elements, if possible.
      */
-    Optional<Collection<LazyOptional<DeviceBusElement>>> getNeighbors();
+    Optional<Collection<DeviceBusElement>> getNeighbors();
 
     /**
      * Returns the list of devices connected specifically by this element.

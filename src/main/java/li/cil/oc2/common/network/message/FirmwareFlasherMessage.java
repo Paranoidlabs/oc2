@@ -2,48 +2,47 @@
 
 package li.cil.oc2.common.network.message;
 
+import li.cil.oc2.api.API;
 import li.cil.oc2.common.blockentity.FlashMemoryFlasherBlockEntity;
 import li.cil.oc2.common.network.MessageUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.network.NetworkEvent;
+import net.neoforged.neoforge.network.handling.PlayPayloadContext;
 
-public final class FirmwareFlasherMessage extends AbstractMessage {
-    private BlockPos pos;
-    private CompoundTag data;
+public record FirmwareFlasherMessage(BlockPos pos, CompoundTag data) implements CustomMessage {
 
-    ///////////////////////////////////////////////////////////////////
+    public static final ResourceLocation ID = new ResourceLocation(API.MOD_ID, "firmware_flasher");
 
     public FirmwareFlasherMessage(final FlashMemoryFlasherBlockEntity diskDrive) {
-        this.pos = diskDrive.getBlockPos();
-        this.data = diskDrive.getFloppy().serializeNBT();
+        this(diskDrive.getBlockPos(), diskDrive.getFloppy().getTag());
     }
 
     public FirmwareFlasherMessage(final FriendlyByteBuf buffer) {
-        super(buffer);
-    }
-
-    ///////////////////////////////////////////////////////////////////
-
-    @Override
-    public void fromBytes(final FriendlyByteBuf buffer) {
-        pos = buffer.readBlockPos();
-        data = buffer.readNbt();
+        this(buffer.readBlockPos(), buffer.readNbt());
     }
 
     @Override
-    public void toBytes(final FriendlyByteBuf buffer) {
+    public void write(final FriendlyByteBuf buffer) {
         buffer.writeBlockPos(pos);
         buffer.writeNbt(data);
     }
 
-    ///////////////////////////////////////////////////////////////////
+    @Override
+    public ResourceLocation id() {
+        return ID;
+    }
 
     @Override
-    protected void handleMessage(final NetworkEvent.Context context) {
+    public void handleClientSide(PlayPayloadContext context) {
         MessageUtils.withClientBlockEntityAt(pos, FlashMemoryFlasherBlockEntity.class,
-            diskDrive -> diskDrive.setFlashMemory(ItemStack.of(data)));
+                diskDrive -> diskDrive.setFlashMemory(ItemStack.of(data)));
+    }
+
+    @Override
+    public void handleServerSide(PlayPayloadContext context) {
+
     }
 }

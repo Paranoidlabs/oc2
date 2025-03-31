@@ -20,18 +20,6 @@ public final class FlashMemoryItem extends AbstractStorageItem {
 
     ///////////////////////////////////////////////////////////////////
 
-    @Nullable
-    @Override
-    public CompoundTag getShareTag(final ItemStack stack) {
-        final CompoundTag tag = super.getShareTag(stack);
-        if (tag != null && tag.contains(API.MOD_ID, NBTTagIds.TAG_COMPOUND)) {
-            tag.getCompound(API.MOD_ID).remove(ByteBufferFlashStorageDevice.DATA_TAG_NAME);
-        }
-        return tag;
-    }
-
-    ///////////////////////////////////////////////////////////////////
-
     @Override
     protected String getOrCreateDescriptionId() {
         if (descriptionId == null) {

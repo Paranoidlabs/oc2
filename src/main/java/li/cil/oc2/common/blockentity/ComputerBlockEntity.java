@@ -6,6 +6,7 @@ import li.cil.oc2.api.bus.DeviceBusElement;
 import li.cil.oc2.api.bus.device.Device;
 import li.cil.oc2.api.bus.device.DeviceTypes;
 import li.cil.oc2.api.bus.device.provider.ItemDeviceQuery;
+import li.cil.oc2.api.capabilities.RedstoneEmitter;
 import li.cil.oc2.api.capabilities.TerminalUserProvider;
 import li.cil.oc2.client.audio.LoopingSoundManager;
 import li.cil.oc2.common.Config;
@@ -14,15 +15,13 @@ import li.cil.oc2.common.bus.AbstractBlockDeviceBusElement;
 import li.cil.oc2.common.bus.BlockDeviceBusController;
 import li.cil.oc2.common.bus.CommonDeviceBusController;
 import li.cil.oc2.common.bus.device.util.Devices;
-import li.cil.oc2.common.capabilities.Capabilities;
 import li.cil.oc2.common.container.ComputerInventoryContainer;
 import li.cil.oc2.common.container.ComputerTerminalContainer;
 import li.cil.oc2.common.energy.FixedEnergyStorage;
-import li.cil.oc2.common.network.Network;
 import li.cil.oc2.common.network.message.ComputerBootErrorMessage;
 import li.cil.oc2.common.network.message.ComputerBusStateMessage;
 import li.cil.oc2.common.network.message.ComputerRunStateMessage;
-import li.cil.oc2.common.network.message.ComputerTerminalOutputMessage;
+import li.cil.oc2.common.network.message.ComputerTerminalBlockMessage;
 import li.cil.oc2.common.serialization.NBTSerialization;
 import li.cil.oc2.common.util.*;
 import li.cil.oc2.common.vm.*;
@@ -30,16 +29,15 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ICapabilityProvider;
-import net.minecraftforge.common.util.LazyOptional;
-import org.jetbrains.annotations.NotNull;
+import net.neoforged.neoforge.energy.IEnergyStorage;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 import javax.annotation.Nullable;
 import java.nio.ByteBuffer;
@@ -139,31 +137,6 @@ public final class ComputerBlockEntity extends ModBlockEntity implements Termina
         }
     }
 
-    @NotNull
-    @Override
-    public <T> LazyOptional<T> getCapability(final Capability<T> capability, @Nullable final Direction side) {
-        if (!isValid()) {
-            return LazyOptional.empty();
-        }
-
-        final LazyOptional<T> optional = super.getCapability(capability, side);
-        if (optional.isPresent()) {
-            return optional;
-        }
-
-        final Direction localSide = HorizontalBlockUtils.toLocal(getBlockState(), side);
-        for (final Device device : virtualMachine.busController.getDevices()) {
-            if (device instanceof final ICapabilityProvider capabilityProvider) {
-                final LazyOptional<T> value = capabilityProvider.getCapability(capability, localSide);
-                if (value.isPresent()) {
-                    return value;
-                }
-            }
-        }
-
-        return LazyOptional.empty();
-    }
-
     @Override
     public void clientTick() {
         terminal.clientTick();
@@ -250,16 +223,13 @@ public final class ComputerBlockEntity extends ModBlockEntity implements Termina
 
     ///////////////////////////////////////////////////////////////////
 
-    @Override
-    protected void collectCapabilities(final CapabilityCollector collector, @Nullable final Direction direction) {
-        collector.offer(Capabilities.itemHandler(), deviceItems.combinedItemHandlers);
-        collector.offer(Capabilities.deviceBusElement(), busElement);
-        collector.offer(Capabilities.terminalUserProvider(), this);
-
-        if (Config.computersUseEnergy()) {
-            collector.offer(Capabilities.energyStorage(), energy);
-        }
+    @Nullable
+    public IEnergyStorage getEnergyStorage(final Direction side) {
+        return energy;
     }
+
+    @Nullable
+    public RedstoneEmitter getRedstoneEmitter(final Direction side) { return null; }
 
     @Override
     protected void loadClient() {
@@ -299,9 +269,9 @@ public final class ComputerBlockEntity extends ModBlockEntity implements Termina
 
     ///////////////////////////////////////////////////////////////////
 
-    private <T> void sendToClientsTrackingComputer(final T message) {
+    private void sendToClientsTrackingComputer(final CustomPacketPayload message) {
         if (chunk != null) {
-            Network.sendToClientsTrackingChunk(message, chunk);
+            PacketDistributor.TRACKING_CHUNK.with(chunk).send(message);
         }
     }
 
@@ -309,7 +279,7 @@ public final class ComputerBlockEntity extends ModBlockEntity implements Termina
 
     private final class ComputerItemStackHandlers extends AbstractVMItemStackHandlers {
         public ComputerItemStackHandlers() {
-            super(new GroupDefinition(DeviceTypes.MEMORY, MEMORY_SLOTS), new GroupDefinition(DeviceTypes.HARD_DRIVE, HARD_DRIVE_SLOTS), new GroupDefinition(DeviceTypes.FLASH_MEMORY, FLASH_MEMORY_SLOTS), new GroupDefinition(DeviceTypes.CARD, CARD_SLOTS), new GroupDefinition(DeviceTypes.CPU, CPU_SLOTS));
+            super(new GroupDefinition(DeviceTypes.MEMORY.get(), MEMORY_SLOTS), new GroupDefinition(DeviceTypes.HARD_DRIVE.get(), HARD_DRIVE_SLOTS), new GroupDefinition(DeviceTypes.FLASH_MEMORY.get(), FLASH_MEMORY_SLOTS), new GroupDefinition(DeviceTypes.CARD.get(), CARD_SLOTS), new GroupDefinition(DeviceTypes.CPU.get(), CPU_SLOTS));
         }
 
         @Override
@@ -349,7 +319,7 @@ public final class ComputerBlockEntity extends ModBlockEntity implements Termina
             assert level != null;
 
             collectDevices(level, getPosition(), null).ifPresent(result -> {
-                for (final BlockEntry info : result.getEntries()) {
+                for (final BlockEntry info : result) {
                     devices.add(info.getDevice());
                     super.addDevice(info.getDevice());
                 }
@@ -357,12 +327,13 @@ public final class ComputerBlockEntity extends ModBlockEntity implements Termina
         }
 
         @Override
-        public Optional<Collection<LazyOptional<DeviceBusElement>>> getNeighbors() {
+        public Optional<Collection<DeviceBusElement>> getNeighbors() {
             return super.getNeighbors().map(neighbors -> {
                 // If we have valid neighbors (complete bus) also add a connection to the bus
                 // element hosting our item devices.
-                final ArrayList<LazyOptional<DeviceBusElement>> list = new ArrayList<>(neighbors);
-                list.add(LazyOptional.of(() -> deviceItems.busElement));
+                final ArrayList<DeviceBusElement> list = new ArrayList<>(neighbors);
+                // TODO
+                //list.add(LazyOptional.of(() -> deviceItems.busElement));
                 return list;
             });
         }
@@ -407,7 +378,7 @@ public final class ComputerBlockEntity extends ModBlockEntity implements Termina
 
         @Override
         protected void sendTerminalUpdateToClient(final ByteBuffer output) {
-            sendToClientsTrackingComputer(new ComputerTerminalOutputMessage(ComputerBlockEntity.this, output));
+            sendToClientsTrackingComputer(new ComputerTerminalBlockMessage(ComputerBlockEntity.this, output.array()));
         }
     }
 
@@ -460,7 +431,7 @@ public final class ComputerBlockEntity extends ModBlockEntity implements Termina
         protected void stopRunnerAndReset() {
             super.stopRunnerAndReset();
 
-            TerminalUtils.resetTerminal(terminal, output -> sendToClientsTrackingComputer(new ComputerTerminalOutputMessage(ComputerBlockEntity.this, output)));
+            TerminalUtils.resetTerminal(terminal, output -> sendToClientsTrackingComputer(new ComputerTerminalBlockMessage(ComputerBlockEntity.this, output.array())));
         }
 
         @Override
@@ -476,6 +447,7 @@ public final class ComputerBlockEntity extends ModBlockEntity implements Termina
                 // Bus just became ready, meaning new devices may be available, meaning new
                 // capabilities may be available, so we need to tell our neighbors.
                 level.updateNeighborsAt(getBlockPos(), getBlockState().getBlock());
+                level.invalidateCapabilities(getBlockPos());
             }
         }
 

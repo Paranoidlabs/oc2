@@ -6,30 +6,34 @@ import li.cil.oc2.api.API;
 import li.cil.oc2.api.bus.device.provider.BlockDeviceProvider;
 import li.cil.oc2.api.bus.device.provider.ItemDeviceProvider;
 import li.cil.oc2.api.util.Registries;
-import li.cil.oc2.common.bus.device.provider.block.BlockEntityCapabilityDeviceProvider;
 import li.cil.oc2.common.bus.device.provider.item.*;
-import li.cil.oc2.common.bus.device.rpc.block.*;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.IForgeRegistry;
-import net.minecraftforge.registries.RegistryBuilder;
+import net.minecraft.core.Registry;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.registries.DeferredRegister;
+import net.neoforged.neoforge.registries.NewRegistryEvent;
+import net.neoforged.neoforge.registries.RegistryBuilder;
 
 import java.util.function.Supplier;
 
 public final class ProviderRegistry {
-    private static final DeferredRegister<BlockDeviceProvider> BLOCK_DEVICE_PROVIDERS = DeferredRegister.create(Registries.BLOCK_DEVICE_PROVIDER, API.MOD_ID);
-    public static final Supplier<IForgeRegistry<BlockDeviceProvider>> BLOCK_DEVICE_PROVIDER_REGISTRY = BLOCK_DEVICE_PROVIDERS.makeRegistry(RegistryBuilder::new);
-
-    ///////////////////////////////////////////////////////////////////
 
     private static final DeferredRegister<ItemDeviceProvider> ITEM_DEVICE_PROVIDERS = DeferredRegister.create(Registries.ITEM_DEVICE_PROVIDER, API.MOD_ID);
-    public static final Supplier<IForgeRegistry<ItemDeviceProvider>> ITEM_DEVICE_PROVIDER_REGISTRY = ITEM_DEVICE_PROVIDERS.makeRegistry(RegistryBuilder::new);
+    public static final Registry<ItemDeviceProvider> ITEM_DEVICE_PROVIDER_REGISTRY = new RegistryBuilder<>(Registries.ITEM_DEVICE_PROVIDER)
+            .create();
+
+    private static final DeferredRegister<BlockDeviceProvider> BLOCK_DEVICE_PROVIDERS = DeferredRegister.create(Registries.BLOCK_DEVICE_PROVIDER, API.MOD_ID);
+    public static final Registry<BlockDeviceProvider> BLOCK_DEVICE_PROVIDER_REGISTRY = new RegistryBuilder<>(Registries.BLOCK_DEVICE_PROVIDER)
+            .create();
 
     ///////////////////////////////////////////////////////////////////
 
-    public static void initialize() {
-        ITEM_DEVICE_PROVIDERS.register(FMLJavaModLoadingContext.get().getModEventBus());
-        BLOCK_DEVICE_PROVIDERS.register(FMLJavaModLoadingContext.get().getModEventBus());
+    public static void initialize(IEventBus modEventBus) {
+        modEventBus.addListener(NewRegistryEvent.class, event -> {
+            event.register(ITEM_DEVICE_PROVIDER_REGISTRY);
+            event.register(BLOCK_DEVICE_PROVIDER_REGISTRY);
+        });
+
+        ITEM_DEVICE_PROVIDERS.register(modEventBus);
 
         ITEM_DEVICE_PROVIDERS.register("memory", MemoryItemDeviceProvider::new);
         ITEM_DEVICE_PROVIDERS.register("hard_drive", HardDriveItemDeviceProvider::new);
@@ -47,19 +51,9 @@ public final class ProviderRegistry {
 
         ITEM_DEVICE_PROVIDERS.register("network_interface_card", NetworkInterfaceCardItemDeviceProvider::new);
         ITEM_DEVICE_PROVIDERS.register("network_tunnel_card", NetworkTunnelCardItemDeviceProvider::new);
-        ITEM_DEVICE_PROVIDERS.register("internet_card", InternetCardItemDeviceProvider::new);
 
         ITEM_DEVICE_PROVIDERS.register("item_stack/capability", ItemStackCapabilityDeviceProvider::new);
         ITEM_DEVICE_PROVIDERS.register("energy_storage", EnergyStorageItemDeviceProvider::new);
-        ITEM_DEVICE_PROVIDERS.register("fluid_handler", FluidHandlerItemDeviceProvider::new);
         ITEM_DEVICE_PROVIDERS.register("item_handler", ItemHandlerItemDeviceProvider::new);
-
-        BLOCK_DEVICE_PROVIDERS.register("block", BlockStateObjectDeviceProvider::new);
-        BLOCK_DEVICE_PROVIDERS.register("block_entity", BlockEntityObjectDeviceProvider::new);
-
-        BLOCK_DEVICE_PROVIDERS.register("block_entity/capability", BlockEntityCapabilityDeviceProvider::new);
-        BLOCK_DEVICE_PROVIDERS.register("energy_storage", EnergyStorageBlockDeviceProvider::new);
-        BLOCK_DEVICE_PROVIDERS.register("fluid_handler", FluidHandlerBlockDeviceProvider::new);
-        BLOCK_DEVICE_PROVIDERS.register("item_handler", ItemHandlerBlockDeviceProvider::new);
     }
 }

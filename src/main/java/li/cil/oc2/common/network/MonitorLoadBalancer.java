@@ -8,11 +8,12 @@ import li.cil.oc2.common.blockentity.MonitorBlockEntity;
 import li.cil.oc2.common.network.message.MonitorFramebufferMessage;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.server.ServerStoppedEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.event.TickEvent;
+import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 
 import javax.annotation.Nullable;
 import java.nio.ByteBuffer;

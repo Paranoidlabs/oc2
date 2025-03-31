@@ -2,7 +2,6 @@
 
 package li.cil.oc2.common;
 
-import dev.architectury.platform.forge.EventBuses;
 import li.cil.ceres.Ceres;
 import li.cil.oc2.api.API;
 import li.cil.oc2.client.ClientSetup;
@@ -25,15 +24,14 @@ import li.cil.oc2.common.util.RegistryUtils;
 import li.cil.oc2.common.util.SoundEvents;
 import li.cil.oc2.common.vm.provider.DeviceTreeProviders;
 import li.cil.sedna.Sedna;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.loading.FMLEnvironment;
 
 @Mod(API.MOD_ID)
 public final class Main {
-    public Main() {
-        EventBuses.registerModEventBus(API.MOD_ID, FMLJavaModLoadingContext.get().getModEventBus());
+    public Main(IEventBus modEventBus) {
         Ceres.initialize();
         Sedna.initialize();
         DeviceTreeProviders.initialize();
@@ -46,27 +44,27 @@ public final class Main {
 
         ItemTags.initialize();
         BlockTags.initialize();
-        Blocks.initialize();
-        Items.initialize();
-        BlockEntities.initialize();
-        Entities.initialize();
-        Containers.initialize();
-        RecipeSerializers.initialize();
-        SoundEvents.initialize();
+        Items.initialize(modEventBus);
+        Blocks.initialize(modEventBus);
+        BlockEntities.initialize(modEventBus);
+        Entities.initialize(modEventBus);
+        Containers.initialize(modEventBus);
+        RecipeSerializers.initialize(modEventBus);
+        SoundEvents.initialize(modEventBus);
 
-        ProviderRegistry.initialize();
-        DeviceTypes.initialize();
+        ProviderRegistry.initialize(modEventBus);
+        DeviceTypes.initialize(modEventBus);
 
-        BlockDeviceDataRegistry.initialize();
-        FirmwareRegistry.initialize();
+        BlockDeviceDataRegistry.initialize(modEventBus);
+        FirmwareRegistry.initialize(modEventBus);
 
-        RegistryUtils.finish();
+        RegistryUtils.finish(modEventBus);
 
-        FMLJavaModLoadingContext.get().getModEventBus().register(CommonSetup.class);
-        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> Manuals::initialize);
-        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () ->
-            FMLJavaModLoadingContext.get().getModEventBus().register(ClientSetup.class));
-
-        ItemGroup.TAB_REGISTER.register(FMLJavaModLoadingContext.get().getModEventBus());
+        CommonSetup.initialize(modEventBus);
+        if (FMLEnvironment.dist == Dist.CLIENT) {
+            Manuals.initialize(modEventBus);
+            modEventBus.register(ClientSetup.class);
+        }
+        ItemGroup.initialize(modEventBus);
     }
 }

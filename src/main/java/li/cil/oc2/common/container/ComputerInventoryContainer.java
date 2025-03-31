@@ -15,12 +15,11 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraftforge.energy.IEnergyStorage;
-import net.minecraftforge.network.NetworkHooks;
+import net.neoforged.neoforge.energy.IEnergyStorage;
 
 public final class ComputerInventoryContainer extends AbstractComputerContainer {
     public static void createServer(final ComputerBlockEntity computer, final IEnergyStorage energy, final CommonDeviceBusController busController, final ServerPlayer player) {
-        NetworkHooks.openScreen(player, new MenuProvider() {
+        player.openMenu(new MenuProvider() {
             @Override
             public Component getDisplayName() {
                 return Component.translatable(computer.getBlockState().getBlock().getDescriptionId());
@@ -50,33 +49,33 @@ public final class ComputerInventoryContainer extends AbstractComputerContainer 
 
         final VMItemStackHandlers handlers = computer.getItemStackHandlers();
 
-        handlers.getItemHandler(DeviceTypes.FLASH_MEMORY).ifPresent(itemHandler -> {
+        handlers.getItemHandler(DeviceTypes.FLASH_MEMORY.get()).ifPresent(itemHandler -> {
             if (itemHandler.getSlots() > 0) {
-                addSlot(new DeviceTypeSlotItemHandler(itemHandler, DeviceTypes.FLASH_MEMORY, 0, 64, 78));
+                addSlot(new DeviceTypeSlotItemHandler(itemHandler, DeviceTypes.FLASH_MEMORY.get(), 0, 64, 78));
             }
         });
 
-        handlers.getItemHandler(DeviceTypes.MEMORY).ifPresent(itemHandler -> {
+        handlers.getItemHandler(DeviceTypes.MEMORY.get()).ifPresent(itemHandler -> {
             for (int slot = 0; slot < itemHandler.getSlots(); slot++) {
-                addSlot(new DeviceTypeSlotItemHandler(itemHandler, DeviceTypes.MEMORY, slot, 64 + slot * SLOT_SIZE, 24));
+                addSlot(new DeviceTypeSlotItemHandler(itemHandler, DeviceTypes.MEMORY.get(), slot, 64 + slot * SLOT_SIZE, 24));
             }
         });
 
-        handlers.getItemHandler(DeviceTypes.HARD_DRIVE).ifPresent(itemHandler -> {
+        handlers.getItemHandler(DeviceTypes.HARD_DRIVE.get()).ifPresent(itemHandler -> {
             for (int slot = 0; slot < itemHandler.getSlots(); slot++) {
-                addSlot(new DeviceTypeSlotItemHandler(itemHandler, DeviceTypes.HARD_DRIVE, slot, 100 + (slot % 2) * SLOT_SIZE, 60 + (slot / 2) * SLOT_SIZE));
+                addSlot(new DeviceTypeSlotItemHandler(itemHandler, DeviceTypes.HARD_DRIVE.get(), slot, 100 + (slot % 2) * SLOT_SIZE, 60 + (slot / 2) * SLOT_SIZE));
             }
         });
 
-        handlers.getItemHandler(DeviceTypes.CARD).ifPresent(itemHandler -> {
+        handlers.getItemHandler(DeviceTypes.CARD.get()).ifPresent(itemHandler -> {
             for (int slot = 0; slot < itemHandler.getSlots(); slot++) {
-                addSlot(new DeviceTypeSlotItemHandler(itemHandler, DeviceTypes.CARD, slot, 38, 24 + slot * SLOT_SIZE));
+                addSlot(new DeviceTypeSlotItemHandler(itemHandler, DeviceTypes.CARD.get(), slot, 38, 24 + slot * SLOT_SIZE));
             }
         });
 
-        handlers.getItemHandler(DeviceTypes.CPU).ifPresent(itemHandler -> {
+        handlers.getItemHandler(DeviceTypes.CPU.get()).ifPresent(itemHandler -> {
             if(itemHandler.getSlots() > 0) {
-                addSlot(new DeviceTypeSlotItemHandler(itemHandler, DeviceTypes.CPU, 0, 64, 52));
+                addSlot(new DeviceTypeSlotItemHandler(itemHandler, DeviceTypes.CPU.get(), 0, 64, 52));
             }
         });
 

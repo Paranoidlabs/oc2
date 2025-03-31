@@ -6,7 +6,7 @@ import li.cil.oc2.common.util.NBTTagIds;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.items.ItemStackHandler;
+import net.neoforged.neoforge.items.ItemStackHandler;
 
 public class FixedSizeItemStackHandler extends ItemStackHandler {
     private static final String SIZE_TAG_NAME = "Size";

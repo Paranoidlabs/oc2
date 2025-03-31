@@ -1,45 +1,33 @@
 modLoader = "javafml"
-loaderVersion = "[47,)"
-issueTrackerURL = "https://github.com/perkinslr/oc2r/issues"
-license = "MIT"
+loaderVersion = "${loader_version_range}"
+issueTrackerURL = "https://github.com/perkinslr/oc2/issues"
+license = "${mod_license}"
 
 [[mods]]
-modId = "oc2r"
-version = "${file.jarVersion}"
-displayName = "OpenComputers II: Reimagined"
-authors = "North Western Development (Originally by Sangar)"
+modId = "${mod_id}"
+version = "${mod_version}"
+displayName = "${mod_name}"
+authors = "${mod_authors}"
 description = '''
-Modern computers for the modern player.
+${mod_description}
 
 This mod uses the Terminus Font under the Open Font License. The full license can be found in the JAR of this mod.
 '''
 
-[[dependencies.oc2r]]
-modId = "forge"
-mandatory = true
-versionRange = "[40.1.68,)"
+[[dependencies.${mod_id}]]
+modId = "neoforge"
+type = "required"
+versionRange = "${neo_version_range}"
 ordering = "NONE"
 side = "BOTH"
-[[dependencies.oc2r]]
+[[dependencies.${mod_id}]]
 modId = "minecraft"
-mandatory = true
-versionRange = "1.20.1"
+type = "required"
+versionRange = "${minecraft_version_range}"
 ordering = "NONE"
 side = "BOTH"
-[[dependencies.oc2r]]
-modId = "sedna"
-mandatory = true
-versionRange = "[1.0.14,)"
-ordering = "NONE"
-side = "BOTH"
-[[dependencies.oc2r]]
+[[dependencies.${mod_id}]]
 modId = "markdown_manual"
-mandatory = true
-versionRange = "[1.2.1,)"
+type = "required"
+versionRange = "[1.2.6,)"
 side = "CLIENT"
-[[dependencies.oc2r]]
-modId = "projectred_transmission"
-mandatory = false
-versionRange = "[4.19.0,)"
-side = "BOTH"
-ordering = "AFTER"

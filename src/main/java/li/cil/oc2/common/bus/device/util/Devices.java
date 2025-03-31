@@ -13,13 +13,13 @@ import li.cil.oc2.common.bus.device.DeviceGroup;
 import li.cil.oc2.common.bus.device.provider.Providers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Registry;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraftforge.registries.IForgeRegistry;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -58,9 +58,9 @@ public final class Devices {
             return Optional.empty();
         }
 
-        final IForgeRegistry<BlockDeviceProvider> registry = Providers.blockDeviceProviderRegistry();
+        final Registry<BlockDeviceProvider> registry = Providers.blockDeviceProviderRegistry();
         final ArrayList<Invalidatable<BlockDeviceInfo>> devices = new ArrayList<>();
-        for (final BlockDeviceProvider provider : registry.getValues()) {
+        for (final BlockDeviceProvider provider : registry.stream().toList()) {
             final Invalidatable<Device> device = provider.getDevice(query);
             if (device.isPresent()) {
                 if(device.get() instanceof DeviceGroup group)
@@ -85,9 +85,9 @@ public final class Devices {
             return Collections.emptyList();
         }
 
-        final IForgeRegistry<ItemDeviceProvider> registry = Providers.itemDeviceProviderRegistry();
+        final Registry<ItemDeviceProvider> registry = Providers.itemDeviceProviderRegistry();
         final ArrayList<ItemDeviceInfo> devices = new ArrayList<>();
-        for (final ItemDeviceProvider provider : registry.getValues()) {
+        for (final ItemDeviceProvider provider : registry.stream().toList()) {
             final Optional<ItemDevice> device = provider.getDevice(query);
             device.ifPresent(d -> devices.add(new ItemDeviceInfo(provider, d, provider.getEnergyConsumption(query))));
         }
@@ -99,9 +99,9 @@ public final class Devices {
             return 0;
         }
 
-        final IForgeRegistry<ItemDeviceProvider> registry = Providers.itemDeviceProviderRegistry();
+        final Registry<ItemDeviceProvider> registry = Providers.itemDeviceProviderRegistry();
         long accumulator = 0;
-        for (final ItemDeviceProvider provider : registry.getValues()) {
+        for (final ItemDeviceProvider provider : registry.stream().toList()) {
             accumulator += Math.max(0, provider.getEnergyConsumption(query));
         }
         if (accumulator > Integer.MAX_VALUE) {

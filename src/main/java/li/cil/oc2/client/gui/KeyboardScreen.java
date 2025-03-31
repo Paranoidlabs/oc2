@@ -142,8 +142,7 @@ public final class KeyboardScreen extends Screen {
     private void grabMouse() {
         final Minecraft minecraft = getMinecraft();
         final MouseHandler mouseHandler = minecraft.mouseHandler;
-        mouseHandler.mouseGrabbed = true;
-        InputConstants.grabOrReleaseMouse(minecraft.getWindow().getWindow(), InputConstants.CURSOR_DISABLED, mouseHandler.xpos(), mouseHandler.ypos());
+        mouseHandler.grabMouse();
     }
 
     private void sendInputMessage(final int keycode, final boolean isDown) {

@@ -18,8 +18,8 @@ import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -125,10 +125,10 @@ public abstract class AbstractMachineInventoryScreen<T extends AbstractMachineTe
     protected void renderFg(final GuiGraphics graphics, final float partialTicks, final int mouseX, final int mouseY) {
         super.renderFg(graphics, partialTicks, mouseX, mouseY);
 
-        GuiUtils.renderMissingDeviceInfoIcon(graphics, this, DeviceTypes.FLASH_MEMORY, Sprites.WARN_ICON);
-        GuiUtils.renderMissingDeviceInfoIcon(graphics, this, DeviceTypes.MEMORY, Sprites.WARN_ICON);
-        GuiUtils.renderMissingDeviceInfoIcon(graphics, this, DeviceTypes.HARD_DRIVE, Sprites.INFO_ICON);
-        GuiUtils.renderMissingDeviceInfoIcon(graphics, this, DeviceTypes.CPU, Sprites.INFO_ICON);
+        GuiUtils.renderMissingDeviceInfoIcon(graphics, this, DeviceTypes.FLASH_MEMORY.get(), Sprites.WARN_ICON);
+        GuiUtils.renderMissingDeviceInfoIcon(graphics, this, DeviceTypes.MEMORY.get(), Sprites.WARN_ICON);
+        GuiUtils.renderMissingDeviceInfoIcon(graphics, this, DeviceTypes.HARD_DRIVE.get(), Sprites.INFO_ICON);
+        GuiUtils.renderMissingDeviceInfoIcon(graphics, this, DeviceTypes.CPU.get(), Sprites.INFO_ICON);
 
         if (shouldRenderEnergyBar()) {
             final int x = leftPos - Sprites.SIDEBAR_2.width + 4;
@@ -141,10 +141,10 @@ public abstract class AbstractMachineInventoryScreen<T extends AbstractMachineTe
     protected void renderTooltip(final GuiGraphics graphics, final int mouseX, final int mouseY) {
         super.renderTooltip(graphics, mouseX, mouseY);
 
-        GuiUtils.renderMissingDeviceInfoTooltip(graphics, this, mouseX, mouseY, DeviceTypes.FLASH_MEMORY);
-        GuiUtils.renderMissingDeviceInfoTooltip(graphics, this, mouseX, mouseY, DeviceTypes.MEMORY);
-        GuiUtils.renderMissingDeviceInfoTooltip(graphics, this, mouseX, mouseY, DeviceTypes.HARD_DRIVE);
-        GuiUtils.renderMissingDeviceInfoTooltip(graphics, this, mouseX, mouseY, DeviceTypes.CPU);
+        GuiUtils.renderMissingDeviceInfoTooltip(graphics, this, mouseX, mouseY, DeviceTypes.FLASH_MEMORY.get());
+        GuiUtils.renderMissingDeviceInfoTooltip(graphics, this, mouseX, mouseY, DeviceTypes.MEMORY.get());
+        GuiUtils.renderMissingDeviceInfoTooltip(graphics, this, mouseX, mouseY, DeviceTypes.HARD_DRIVE.get());
+        GuiUtils.renderMissingDeviceInfoTooltip(graphics, this, mouseX, mouseY, DeviceTypes.CPU.get());
 
         if (!shouldRenderEnergyBar()) {
             return;

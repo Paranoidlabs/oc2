@@ -16,12 +16,13 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.state.BlockState;
 import java.util.Collection;
-import net.minecraftforge.fml.ModList;
 import java.util.*;
 import javax.annotation.Nullable;
 
 import com.google.gson.JsonObject;
 import li.cil.oc2.api.bus.device.rpc.*;
+import net.neoforged.fml.ModList;
+
 import static java.util.Collections.singletonList;
 
 public final class RedstoneInterfaceBlockEntity extends ModBlockEntity implements NamedDevice, DocumentedDevice, RPCEventSource {

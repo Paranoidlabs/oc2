@@ -4,19 +4,15 @@ import li.cil.oc2.api.capabilities.NetworkInterface;
 import li.cil.oc2.common.Config;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.capabilities.Capabilities;
-import li.cil.oc2.common.util.LazyOptionalUtils;
-import li.cil.oc2.common.util.LevelUtils;
 import li.cil.oc2.common.vxlan.TunnelManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.common.util.LazyOptional;
 
-import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.stream.Stream;
@@ -127,17 +123,6 @@ public final class VxlanBlockEntity extends ModBlockEntity implements NetworkInt
         adjacentBlockInterfaces[0] = TunnelManager.instance().registerVti(vti, this.packetQueue);
     }
 
-    ///////////////////////////////////////////////////////////////////
-
-
-
-    @Override
-    protected void collectCapabilities(final CapabilityCollector collector, @Nullable final Direction direction) {
-        collector.offer(Capabilities.networkInterface(), this);
-    }
-
-    ///////////////////////////////////////////////////////////////////
-
     private Stream<NetworkInterface> getAdjacentInterfaces() {
         validateAdjacentBlocks();
         return Arrays.stream(adjacentBlockInterfaces).filter(Objects::nonNull);
@@ -160,14 +145,10 @@ public final class VxlanBlockEntity extends ModBlockEntity implements NetworkInt
 
         final BlockPos pos = getBlockPos();
         for (final Direction side : Constants.DIRECTIONS) {
-            final BlockEntity neighborBlockEntity = LevelUtils.getBlockEntityIfChunkExists(level, pos.relative(side));
-            if (neighborBlockEntity != null) {
-                final LazyOptional<NetworkInterface> optional = neighborBlockEntity.getCapability(Capabilities.networkInterface(), side.getOpposite());
-                optional.ifPresent(adjacentInterface -> {
-                    adjacentBlockInterfaces[side.get3DDataValue() + 1] = adjacentInterface;
-                    LazyOptionalUtils.addWeakListener(optional, this, (hub, unused) -> hub.handleNeighborChanged());
-                });
-            }
+            Optional.ofNullable(level.getCapability(Capabilities.Networked.BLOCK, pos.relative(side), side.getOpposite()))
+                    .ifPresent(adjacentInterface -> {
+                        adjacentBlockInterfaces[side.get3DDataValue() + 1] = adjacentInterface;
+                    });
         }
     }
 }

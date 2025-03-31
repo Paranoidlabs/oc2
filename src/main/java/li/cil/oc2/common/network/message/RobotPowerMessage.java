@@ -2,44 +2,43 @@
 
 package li.cil.oc2.common.network.message;
 
+import li.cil.oc2.api.API;
 import li.cil.oc2.common.entity.Robot;
 import li.cil.oc2.common.network.MessageUtils;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.network.NetworkEvent;
+import net.minecraft.resources.ResourceLocation;
+import net.neoforged.neoforge.network.handling.PlayPayloadContext;
 
-public final class RobotPowerMessage extends AbstractMessage {
-    private int entityId;
-    private boolean power;
+public record RobotPowerMessage(int entityId, boolean power) implements CustomMessage {
 
-    ///////////////////////////////////////////////////////////////////
+    public static final ResourceLocation ID = new ResourceLocation(API.MOD_ID, "robot_power");
 
     public RobotPowerMessage(final Robot robot, final boolean power) {
-        this.entityId = robot.getId();
-        this.power = power;
+        this(robot.getId(), power);
     }
 
     public RobotPowerMessage(final FriendlyByteBuf buffer) {
-        super(buffer);
-    }
-
-    ///////////////////////////////////////////////////////////////////
-
-    @Override
-    public void fromBytes(final FriendlyByteBuf buffer) {
-        entityId = buffer.readVarInt();
-        power = buffer.readBoolean();
+        this(buffer.readVarInt(), buffer.readBoolean());
     }
 
     @Override
-    public void toBytes(final FriendlyByteBuf buffer) {
+    public void write(final FriendlyByteBuf buffer) {
         buffer.writeVarInt(entityId);
         buffer.writeBoolean(power);
     }
 
-    ///////////////////////////////////////////////////////////////////
+    @Override
+    public ResourceLocation id() {
+        return ID;
+    }
 
     @Override
-    protected void handleMessage(final NetworkEvent.Context context) {
+    public void handleClientSide(PlayPayloadContext context) {
+
+    }
+
+    @Override
+    public void handleServerSide(PlayPayloadContext context) {
         MessageUtils.withNearbyServerEntity(context, entityId, Robot.class,
             robot -> {
                 if (power) {

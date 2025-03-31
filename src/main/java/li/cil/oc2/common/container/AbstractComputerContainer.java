@@ -7,7 +7,7 @@ import li.cil.oc2.common.blockentity.ComputerBlockEntity;
 import li.cil.oc2.common.bus.CommonDeviceBusController;
 import li.cil.oc2.common.network.Network;
 import li.cil.oc2.common.network.message.ComputerPowerMessage;
-import li.cil.oc2.common.network.message.ComputerTerminalInputMessage;
+import li.cil.oc2.common.network.message.ComputerTerminalBlockMessage;
 import li.cil.oc2.common.network.message.OpenComputerInventoryMessage;
 import li.cil.oc2.common.network.message.OpenComputerTerminalMessage;
 import li.cil.oc2.common.vm.Terminal;
@@ -16,7 +16,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.energy.IEnergyStorage;
+import net.neoforged.neoforge.energy.IEnergyStorage;
 
 import java.nio.ByteBuffer;
 
@@ -51,7 +51,7 @@ public abstract class AbstractComputerContainer extends AbstractMachineTerminalC
 
     @Override
     public void sendPowerStateToServer(final boolean value) {
-        Network.sendToServer(new ComputerPowerMessage(computer, value));
+        Network.sendToServer(new ComputerPowerMessage(computer.getBlockPos(), value));
     }
 
     @Override
@@ -61,7 +61,7 @@ public abstract class AbstractComputerContainer extends AbstractMachineTerminalC
 
     @Override
     public void sendTerminalInputToServer(final ByteBuffer input) {
-        Network.sendToServer(new ComputerTerminalInputMessage(computer, input));
+        Network.sendToServer(new ComputerTerminalBlockMessage(computer.getBlockPos(), input.array()));
     }
 
     @Override

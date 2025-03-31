@@ -5,7 +5,6 @@ package li.cil.oc2.common.blockentity;
 import li.cil.oc2.common.Config;
 import li.cil.oc2.common.block.ProjectorBlock;
 import li.cil.oc2.common.bus.device.vm.block.ProjectorDevice;
-import li.cil.oc2.common.capabilities.Capabilities;
 import li.cil.oc2.common.energy.FixedEnergyStorage;
 import li.cil.oc2.common.network.Network;
 import li.cil.oc2.common.network.ProjectorLoadBalancer;
@@ -195,7 +194,6 @@ public final class ProjectorBlockEntity extends ModBlockEntity implements Tickab
         energy.deserializeNBT(tag.getCompound(ENERGY_TAG_NAME));
     }
 
-    @Override
     public AABB getRenderBoundingBox() {
         return renderBounds;
     }
@@ -248,21 +246,6 @@ public final class ProjectorBlockEntity extends ModBlockEntity implements Tickab
             }
         }, DECODER_WORKERS);
     }
-
-    ///////////////////////////////////////////////////////////////
-
-    @Override
-    protected void collectCapabilities(final CapabilityCollector collector, @Nullable final Direction direction) {
-        if (Config.projectorsUseEnergy()) {
-            collector.offer(Capabilities.energyStorage(), energy);
-        }
-
-        if (direction == getBlockState().getValue(ProjectorBlock.FACING).getOpposite()) {
-            collector.offer(Capabilities.device(), projectorDevice);
-        }
-    }
-
-    ///////////////////////////////////////////////////////////////
 
     private void handleMountedChanged(final boolean value) {
         updateProjectorState(value, hasEnergy);

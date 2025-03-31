@@ -5,15 +5,15 @@ package li.cil.oc2.common.bus.device.data;
 import li.cil.oc2.api.API;
 import li.cil.oc2.api.bus.device.data.BlockDeviceData;
 import li.cil.oc2.api.util.Registries;
+import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.IForgeRegistry;
-import net.minecraftforge.registries.RegistryBuilder;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.DeferredRegister;
+import net.neoforged.neoforge.registries.NewRegistryEvent;
+import net.neoforged.neoforge.registries.RegistryBuilder;
 
 import javax.annotation.Nullable;
-import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 public final class BlockDeviceDataRegistry {
@@ -21,21 +21,23 @@ public final class BlockDeviceDataRegistry {
 
     ///////////////////////////////////////////////////////////////////
 
-    private static final Supplier<IForgeRegistry<BlockDeviceData>> REGISTRY = INITIALIZER.makeRegistry(RegistryBuilder::new);
+    private static final Registry<BlockDeviceData> REGISTRY = new RegistryBuilder<>(Registries.BLOCK_DEVICE_DATA)
+            .create();
 
     ///////////////////////////////////////////////////////////////////
 
-    public static final RegistryObject<BlockDeviceData> BUILDROOT = INITIALIZER.register("buildroot", BuildrootBlockDeviceData::new);
+    public static final DeferredHolder<BlockDeviceData, BuildrootBlockDeviceData> BUILDROOT = INITIALIZER.register("buildroot", BuildrootBlockDeviceData::new);
 
     ///////////////////////////////////////////////////////////////////
 
-    public static void initialize() {
-        INITIALIZER.register(FMLJavaModLoadingContext.get().getModEventBus());
+    public static void initialize(IEventBus modEventBus) {
+        modEventBus.addListener(NewRegistryEvent.class, event -> event.register(REGISTRY));
+        INITIALIZER.register(modEventBus);
     }
 
     @Nullable
     public static ResourceLocation getKey(final BlockDeviceData data) {
-        ResourceLocation location = REGISTRY.get().getKey(data);
+        ResourceLocation location = REGISTRY.getKey(data);
         if (location == null) {
             location = FileSystems.getKeyByValue(data);
         }
@@ -44,7 +46,7 @@ public final class BlockDeviceDataRegistry {
 
     @Nullable
     public static BlockDeviceData getValue(final ResourceLocation location) {
-        final BlockDeviceData value = REGISTRY.get().getValue(location);
+        final BlockDeviceData value = REGISTRY.get(location);
         if (value != null) {
             return value;
         }
@@ -53,7 +55,7 @@ public final class BlockDeviceDataRegistry {
 
     public static Stream<BlockDeviceData> values() {
         return Stream.concat(
-            REGISTRY.get().getValues().stream(),
+            REGISTRY.stream(),
             FileSystems.getBlockData().values().stream());
     }
 }

@@ -8,10 +8,10 @@ import li.cil.oc2.common.item.Items;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
-import net.minecraftforge.client.model.generators.ItemModelBuilder;
-import net.minecraftforge.client.model.generators.ItemModelProvider;
-import net.minecraftforge.common.data.ExistingFileHelper;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.neoforge.client.model.generators.ItemModelBuilder;
+import net.neoforged.neoforge.client.model.generators.ItemModelProvider;
+import net.neoforged.neoforge.common.data.ExistingFileHelper;
+import net.neoforged.neoforge.registries.DeferredItem;
 
 public final class ModItemModelProvider extends ItemModelProvider {
     public ModItemModelProvider(final PackOutput output, final ExistingFileHelper existingFileHelper) {
@@ -71,11 +71,11 @@ public final class ModItemModelProvider extends ItemModelProvider {
         withExistingParent(Entities.ROBOT.getId().getPath(), "template_shulker_box");
     }
 
-    private <T extends Item> void simple(final RegistryObject<T> item) {
+    private <T extends Item> void simple(final DeferredItem<T> item) {
         simple(item, "item/" + item.getId().getPath());
     }
 
-    private <T extends Item> ItemModelBuilder simple(final RegistryObject<T> item, final String texturePath) {
+    private <T extends Item> ItemModelBuilder simple(final DeferredItem<T> item, final String texturePath) {
         return singleTexture(item.getId().getPath(),
             new ResourceLocation("item/generated"),
             "layer0",

@@ -8,7 +8,7 @@ import li.cil.oc2.common.Config;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
-import net.minecraftforge.common.util.FakePlayerFactory;
+import net.neoforged.neoforge.common.util.FakePlayerFactory;
 
 public final class FakePlayerUtils {
     private static final String FAKE_PLAYER_NAME = "[" + API.MOD_ID + "]";

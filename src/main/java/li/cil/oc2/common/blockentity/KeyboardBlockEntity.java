@@ -3,7 +3,6 @@
 package li.cil.oc2.common.blockentity;
 
 import li.cil.oc2.common.bus.device.vm.block.KeyboardDevice;
-import li.cil.oc2.common.capabilities.Capabilities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -23,14 +22,5 @@ public final class KeyboardBlockEntity extends ModBlockEntity {
 
     public void handleInput(final int keycode, final boolean isDown) {
         keyboardDevice.sendKeyEvent(keycode, isDown);
-    }
-
-    ///////////////////////////////////////////////////////////////////
-
-    @Override
-    protected void collectCapabilities(final CapabilityCollector collector, @Nullable final Direction direction) {
-        if (direction == Direction.DOWN) {
-            collector.offer(Capabilities.device(), keyboardDevice);
-        }
     }
 }

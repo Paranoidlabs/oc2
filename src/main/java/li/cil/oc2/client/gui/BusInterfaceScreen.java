@@ -109,7 +109,7 @@ public final class BusInterfaceScreen extends Screen {
     @Override
     public void tick() {
         super.tick();
-        nameField.tick();
+        //nameField.tick();
 
         final Vec3 busCableCenter = Vec3.atCenterOf(busCable.getBlockPos());
         if (!busCable.isValid() ||
@@ -133,7 +133,7 @@ public final class BusInterfaceScreen extends Screen {
 
     @Override
     public void render(final GuiGraphics graphics, final int mouseX, final int mouseY, final float partialTicks) {
-        renderBackground(graphics);
+        renderBackground(graphics, mouseX, mouseY, partialTicks);
         Sprites.BUS_INTERFACE_SCREEN.draw(graphics, left, top);
 
         super.render(graphics, mouseX, mouseY, partialTicks);
@@ -150,6 +150,6 @@ public final class BusInterfaceScreen extends Screen {
     ///////////////////////////////////////////////////////////////////
 
     private void setInterfaceName(final String name) {
-        Network.sendToServer(new BusInterfaceNameMessage.ToServer(busCable, side, name));
+        Network.sendToServer(new BusInterfaceNameMessage(busCable.getBlockPos(), side, name));
     }
 }

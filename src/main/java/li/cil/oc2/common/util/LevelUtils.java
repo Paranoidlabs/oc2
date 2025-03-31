@@ -3,6 +3,7 @@
 package li.cil.oc2.common.util;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
@@ -11,7 +12,6 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
@@ -37,7 +37,7 @@ public final class LevelUtils {
 
         final BlockEntity blockEntity = level.getBlockEntity(pos);
         if (blockEntity != null) {
-            final ResourceLocation registryName = ForgeRegistries.BLOCK_ENTITY_TYPES.getKey(blockEntity.getType());
+            final ResourceLocation registryName = BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(blockEntity.getType());
             if (registryName != null) {
                 return registryName.toString();
             }
@@ -45,7 +45,7 @@ public final class LevelUtils {
 
         final Block block = level.getBlockState(pos).getBlock();
         {
-            final ResourceLocation registryName = ForgeRegistries.BLOCKS.getKey(block);
+            final ResourceLocation registryName = BuiltInRegistries.BLOCK.getKey(block);
             if (registryName != null) {
                 return registryName.toString();
             }

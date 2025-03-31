@@ -9,16 +9,16 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraftforge.network.NetworkEvent;
+import net.neoforged.neoforge.network.handling.PlayPayloadContext;
 
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public final class MessageUtils {
-    public static <T extends BlockEntity> void withNearbyServerBlockEntityForInteraction(final NetworkEvent.Context context, final BlockPos pos, final Class<T> type, final BiConsumer<ServerPlayer, T> callback) {
-        final ServerPlayer player = context.getSender();
-        if (player == null) { // || !pos.closerToCenterThan(player.position(), 8)) {
+    public static <T extends BlockEntity> void withNearbyServerBlockEntityForInteraction(final PlayPayloadContext context, final BlockPos pos, final Class<T> type, final BiConsumer<ServerPlayer, T> callback) {
+        if (context.player().isEmpty()) { // || !pos.closerToCenterThan(player.position(), 8)) {
             return;
         }
 
@@ -26,11 +26,11 @@ public final class MessageUtils {
     }
 
     @SuppressWarnings("unchecked")
-    public static <T extends BlockEntity> void withNearbyServerBlockEntity(final NetworkEvent.Context context, final BlockPos pos, final Class<T> type, final BiConsumer<ServerPlayer, T> callback) {
-        final ServerPlayer player = context.getSender();
-        if (player == null) {
+    public static <T extends BlockEntity> void withNearbyServerBlockEntity(final PlayPayloadContext context, final BlockPos pos, final Class<T> type, final BiConsumer<ServerPlayer, T> callback) {
+        if (context.player().isEmpty()) {
             return;
         }
+        final ServerPlayer player = (ServerPlayer) context.player().get();
 
         final ServerLevel level = player.getServer().getLevel(player.level().dimension());
         final BlockEntity blockEntity = LevelUtils.getBlockEntityIfChunkExists(level, pos);
@@ -40,11 +40,11 @@ public final class MessageUtils {
     }
 
     @SuppressWarnings("unchecked")
-    public static <T extends Entity> void withServerEntity(final NetworkEvent.Context context, final int id, final Class<T> type, final Consumer<T> callback) {
-        final ServerPlayer player = context.getSender();
-        if (player == null) {
+    public static <T extends Entity> void withServerEntity(final PlayPayloadContext context, final int id, final Class<T> type, final Consumer<T> callback) {
+        if (context.player().isEmpty()) {
             return;
         }
+        final Player player = context.player().get();
 
         final ServerLevel level = player.getServer().getLevel(player.level().dimension());
         final Entity entity = level.getEntity(id);
@@ -54,11 +54,11 @@ public final class MessageUtils {
     }
 
     @SuppressWarnings("unchecked")
-    public static <T extends Entity> void withNearbyServerEntity(final NetworkEvent.Context context, final int id, final Class<T> type, final Consumer<T> callback) {
-        final ServerPlayer player = context.getSender();
-        if (player == null) {
+    public static <T extends Entity> void withNearbyServerEntity(final PlayPayloadContext context, final int id, final Class<T> type, final Consumer<T> callback) {
+        if (context.player().isEmpty()) {
             return;
         }
+        final Player player = context.player().get();
 
         final ServerLevel level = player.getServer().getLevel(player.level().dimension());
         final Entity entity = level.getEntity(id);

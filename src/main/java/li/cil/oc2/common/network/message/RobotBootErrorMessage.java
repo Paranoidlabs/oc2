@@ -2,48 +2,47 @@
 
 package li.cil.oc2.common.network.message;
 
+import li.cil.oc2.api.API;
 import li.cil.oc2.common.entity.Robot;
 import li.cil.oc2.common.network.MessageUtils;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
-import net.minecraftforge.network.NetworkEvent;
+import net.minecraft.resources.ResourceLocation;
+import net.neoforged.neoforge.network.handling.PlayPayloadContext;
 
 import javax.annotation.Nullable;
 
-public final class RobotBootErrorMessage extends AbstractMessage {
-    private int entityId;
-    private Component value;
+public record RobotBootErrorMessage(int entityId, Component value) implements CustomMessage {
 
-    ///////////////////////////////////////////////////////////////////
+    public static final ResourceLocation ID = new ResourceLocation(API.MOD_ID, "robot_boot_error");
 
     public RobotBootErrorMessage(final Robot robot, @Nullable final Component value) {
-        this.entityId = robot.getId();
-        this.value = value;
+        this(robot.getId(), value);
     }
 
     public RobotBootErrorMessage(final FriendlyByteBuf buffer) {
-        super(buffer);
-    }
-
-    ///////////////////////////////////////////////////////////////////
-
-    @Override
-    public void fromBytes(final FriendlyByteBuf buffer) {
-        entityId = buffer.readVarInt();
-        value = buffer.readComponent();
+        this(buffer.readVarInt(), buffer.readComponent());
     }
 
     @Override
-    public void toBytes(final FriendlyByteBuf buffer) {
+    public void write(final FriendlyByteBuf buffer) {
         buffer.writeVarInt(entityId);
         buffer.writeComponent(value);
     }
 
-    ///////////////////////////////////////////////////////////////////
+    @Override
+    public ResourceLocation id() {
+        return ID;
+    }
 
     @Override
-    protected void handleMessage(final NetworkEvent.Context context) {
+    public void handleClientSide(PlayPayloadContext context) {
         MessageUtils.withClientEntity(entityId, Robot.class,
             robot -> robot.getVirtualMachine().setBootErrorClient(value));
+    }
+
+    @Override
+    public void handleServerSide(PlayPayloadContext context) {
+
     }
 }

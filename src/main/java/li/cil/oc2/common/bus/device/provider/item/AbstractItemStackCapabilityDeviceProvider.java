@@ -5,18 +5,17 @@ package li.cil.oc2.common.bus.device.provider.item;
 import li.cil.oc2.api.bus.device.ItemDevice;
 import li.cil.oc2.api.bus.device.provider.ItemDeviceQuery;
 import li.cil.oc2.common.bus.device.provider.util.AbstractItemDeviceProvider;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.util.LazyOptional;
+import net.neoforged.neoforge.capabilities.ItemCapability;
 
 import java.util.Optional;
 import java.util.function.Supplier;
 
 public abstract class AbstractItemStackCapabilityDeviceProvider<TCapability> extends AbstractItemDeviceProvider {
-    private final Supplier<Capability<TCapability>> capabilitySupplier;
+    private final ItemCapability<TCapability, Void> capabilitySupplier;
 
     ///////////////////////////////////////////////////////////////////
 
-    protected AbstractItemStackCapabilityDeviceProvider(final Supplier<Capability<TCapability>> capabilitySupplier) {
+    protected AbstractItemStackCapabilityDeviceProvider(final ItemCapability<TCapability, Void> capabilitySupplier) {
         this.capabilitySupplier = capabilitySupplier;
     }
 
@@ -24,10 +23,10 @@ public abstract class AbstractItemStackCapabilityDeviceProvider<TCapability> ext
 
     @Override
     protected Optional<ItemDevice> getItemDevice(final ItemDeviceQuery query) {
-        final Capability<TCapability> capability = capabilitySupplier.get();
+        final ItemCapability<TCapability, Void> capability = capabilitySupplier;
         if (capability == null) throw new IllegalStateException();
-        final LazyOptional<TCapability> optional = query.getItemStack().getCapability(capability);
-        if (!optional.isPresent()) {
+        final Optional<TCapability> optional = Optional.ofNullable(query.getItemStack().getCapability(capability));
+        if (optional.isEmpty()) {
             return Optional.empty();
         }
 

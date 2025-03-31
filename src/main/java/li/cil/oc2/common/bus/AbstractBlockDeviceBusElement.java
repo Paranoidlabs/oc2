@@ -5,7 +5,6 @@ package li.cil.oc2.common.bus;
 import li.cil.oc2.api.bus.BlockDeviceBusElement;
 import li.cil.oc2.api.bus.DeviceBusElement;
 import li.cil.oc2.api.bus.device.Device;
-import li.cil.oc2.api.bus.device.provider.BlockDeviceProvider;
 import li.cil.oc2.api.bus.device.provider.BlockDeviceQuery;
 import li.cil.oc2.api.util.Invalidatable;
 import li.cil.oc2.common.Constants;
@@ -13,17 +12,15 @@ import li.cil.oc2.common.bus.device.provider.Providers;
 import li.cil.oc2.common.bus.device.rpc.TypeNameRPCDevice;
 import li.cil.oc2.common.bus.device.util.BlockDeviceInfo;
 import li.cil.oc2.common.bus.device.util.Devices;
-import li.cil.oc2.common.capabilities.Capabilities;
 import li.cil.oc2.common.util.LevelUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.registries.IForgeRegistry;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -39,13 +36,13 @@ public abstract class AbstractBlockDeviceBusElement extends AbstractGroupingDevi
     // DeviceBusElement
 
     @Override
-    public Optional<Collection<LazyOptional<DeviceBusElement>>> getNeighbors() {
+    public Optional<Collection<DeviceBusElement>> getNeighbors() {
         final LevelAccessor level = getLevel();
         if (level == null || level.isClientSide()) {
             return Optional.empty();
         }
 
-        final ArrayList<LazyOptional<DeviceBusElement>> neighbors = new ArrayList<>();
+        final ArrayList<DeviceBusElement> neighbors = new ArrayList<>();
         for (final Direction neighborDirection : Constants.DIRECTIONS) {
             if (!canScanContinueTowards(neighborDirection)) {
                 continue;
@@ -58,6 +55,8 @@ public abstract class AbstractBlockDeviceBusElement extends AbstractGroupingDevi
                 return Optional.empty();
             }
 
+            // TODO
+            /*
             final BlockEntity blockEntity = level.getBlockEntity(neighborPos);
             if (blockEntity == null) {
                 continue;
@@ -66,7 +65,7 @@ public abstract class AbstractBlockDeviceBusElement extends AbstractGroupingDevi
             final LazyOptional<DeviceBusElement> capability = blockEntity.getCapability(Capabilities.deviceBusElement(), neighborDirection.getOpposite());
             if (capability.isPresent()) {
                 neighbors.add(capability);
-            }
+            }*/
         }
 
         return Optional.of(neighbors);
@@ -97,7 +96,8 @@ public abstract class AbstractBlockDeviceBusElement extends AbstractGroupingDevi
             final int index = side.get3DDataValue();
             final BlockPos pos = getPosition().relative(side);
             final BlockDeviceQuery query = Devices.makeQuery(level, pos, side.getOpposite());
-            setEntriesForGroup(index, new BlockQueryResult(query, Collections.emptySet()));
+            //setEntriesForGroup(index, new BlockQueryResult(query, Collections.emptySet()));
+            setEntriesForGroup(index, Collections.emptySet());
         }
 
         scheduleScan();
@@ -113,12 +113,11 @@ public abstract class AbstractBlockDeviceBusElement extends AbstractGroupingDevi
         return canScanContinueTowards(direction);
     }
 
-    protected Optional<BlockQueryResult> collectDevices(final LevelAccessor level, final BlockPos pos, @Nullable final Direction side) {
-        final BlockDeviceQuery query = Devices.makeQuery(level, pos, side != null ? side.getOpposite() : null);
+    protected Optional<Set<BlockEntry>> collectDevices(final LevelAccessor level, final BlockPos pos, @Nullable final Direction side) {
         final HashSet<BlockEntry> entries = new HashSet<>();
 
         if (canDetectDevicesTowards(side)) {
-            final Optional<List<Invalidatable<BlockDeviceInfo>>> loadedDevices = Devices.getDevices(query);
+            final Optional<List<Invalidatable<BlockDeviceInfo>>> loadedDevices = Optional.empty(); // Devices.getDevices(query);
             if (loadedDevices.isPresent()) {
                 for (final Invalidatable<BlockDeviceInfo> deviceInfo : loadedDevices.get()) {
                     if (deviceInfo.isPresent()) {
@@ -132,7 +131,7 @@ public abstract class AbstractBlockDeviceBusElement extends AbstractGroupingDevi
             collectSyntheticDevices(level, pos, side, entries);
         }
 
-        return Optional.of(new BlockQueryResult(query, entries));
+        return Optional.of(entries);
     }
 
     protected void collectSyntheticDevices(final LevelAccessor level, final BlockPos pos, @Nullable final Direction side, final HashSet<BlockEntry> entries) {
@@ -156,17 +155,6 @@ public abstract class AbstractBlockDeviceBusElement extends AbstractGroupingDevi
     protected void onEntryRemoved(final BlockEntry entry) {
         super.onEntryRemoved(entry);
         entry.removeListener();
-    }
-
-    @Override
-    protected void onEntryRemoved(final String dataKey, final CompoundTag tag, @Nullable final BlockDeviceQuery query) {
-        super.onEntryRemoved(dataKey, tag, query);
-        assert query != null : "Passed null query for block device bus element.";
-        final IForgeRegistry<BlockDeviceProvider> registry = Providers.blockDeviceProviderRegistry();
-        final BlockDeviceProvider provider = registry.getValue(new ResourceLocation(dataKey));
-        if (provider != null) {
-            provider.unmount(query, tag);
-        }
     }
 
     ///////////////////////////////////////////////////////////////////

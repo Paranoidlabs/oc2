@@ -2,6 +2,7 @@
 
 package li.cil.oc2.common.block;
 
+import com.mojang.serialization.MapCodec;
 import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.blockentity.TickableBlockEntity;
 import net.minecraft.core.BlockPos;
@@ -18,14 +19,17 @@ import net.minecraft.world.level.material.MapColor;
 
 import javax.annotation.Nullable;
 
+import static li.cil.oc2.common.block.Blocks.CHARGER_CODEC;
+
 public final class ChargerBlock extends HalfTransparentBlock implements EntityBlock {
-    public ChargerBlock() {
-        super(Properties
-            .of()
-            .mapColor(MapColor.METAL)
-            .sound(SoundType.METAL)
-            .strength(1.5f, 6.0f));
+    public ChargerBlock(Block.Properties properties) {
+        super(properties);
         registerDefaultState(getStateDefinition().any().setValue(HorizontalDirectionalBlock.FACING, Direction.NORTH));
+    }
+
+    @Override
+    protected MapCodec<? extends HalfTransparentBlock> codec() {
+        return CHARGER_CODEC.get();
     }
 
     ///////////////////////////////////////////////////////////////////
