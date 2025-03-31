@@ -162,7 +162,7 @@ public class CommonDeviceBusController implements DeviceBusController {
         // adapters keep devices mounted until a scan, which is a nice performance plus.
 
         collectBusElements().ifPresent(optionals -> {
-            final HashSet<DeviceBusElement> addedElements = updateElements(optionals.keySet());
+            final HashSet<DeviceBusElement> addedElements = updateElements(optionals);
 
             if (checkOtherBusControllers()) {
                 return;
@@ -225,21 +225,17 @@ public class CommonDeviceBusController implements DeviceBusController {
         scanDevices();
     }
 
-    private Optional<HashMap<DeviceBusElement, DeviceBusElement>> collectBusElements() {
+    private Optional<HashSet<DeviceBusElement>> collectBusElements() {
         final HashSet<DeviceBusElement> closed = new HashSet<>();
         final Stack<DeviceBusElement> open = new Stack<>();
-        final HashMap<DeviceBusElement, DeviceBusElement> optionals = new HashMap<>();
 
-        // TODO
-        /*
         closed.add(root);
         open.add(root);
-        optionals.put(root, LazyOptional.empty()); // Needed because we only return this map.
 
         while (!open.isEmpty()) {
             final DeviceBusElement element = open.pop();
 
-            final Optional<Collection<LazyOptional<DeviceBusElement>>> elementNeighbors = element.getNeighbors();
+            final Optional<Collection<DeviceBusElement>> elementNeighbors = element.getNeighbors();
             if (elementNeighbors.isEmpty()) {
                 scanDelay = INCOMPLETE_RETRY_INTERVAL;
                 state = BusState.INCOMPLETE;
@@ -248,13 +244,10 @@ public class CommonDeviceBusController implements DeviceBusController {
                 return Optional.empty();
             }
 
-            for (final LazyOptional<DeviceBusElement> neighbor : elementNeighbors.get()) {
-                neighbor.ifPresent(neighborElement -> {
-                    if (closed.add(neighborElement)) {
-                        open.add(neighborElement);
-                        optionals.put(neighborElement, neighbor);
-                    }
-                });
+            for (final DeviceBusElement neighbor : elementNeighbors.get()) {
+                if (closed.add(neighbor)) {
+                    open.add(neighbor);
+                }
             }
 
             if (closed.size() > MAX_BUS_ELEMENT_COUNT) {
@@ -266,9 +259,7 @@ public class CommonDeviceBusController implements DeviceBusController {
             }
         }
 
-        return Optional.of(optionals);
-         */
-        return Optional.empty();
+        return Optional.of(closed);
     }
 
     private HashSet<DeviceBusElement> updateElements(final Set<DeviceBusElement> newElements) {

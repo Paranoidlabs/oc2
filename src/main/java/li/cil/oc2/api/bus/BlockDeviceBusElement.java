@@ -3,6 +3,7 @@
 package li.cil.oc2.api.bus;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 
 import javax.annotation.Nullable;
@@ -21,7 +22,7 @@ public interface BlockDeviceBusElement extends DeviceBusElement {
      * @return the level the bus lives in.
      */
     @Nullable
-    LevelAccessor getLevel();
+    Level getLevel();
 
     /**
      * The position of this bus element.

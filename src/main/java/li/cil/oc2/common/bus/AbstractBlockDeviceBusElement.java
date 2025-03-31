@@ -12,6 +12,7 @@ import li.cil.oc2.common.bus.device.provider.Providers;
 import li.cil.oc2.common.bus.device.rpc.TypeNameRPCDevice;
 import li.cil.oc2.common.bus.device.util.BlockDeviceInfo;
 import li.cil.oc2.common.bus.device.util.Devices;
+import li.cil.oc2.common.capabilities.Capabilities;
 import li.cil.oc2.common.util.LevelUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -19,6 +20,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
@@ -37,7 +39,7 @@ public abstract class AbstractBlockDeviceBusElement extends AbstractGroupingDevi
 
     @Override
     public Optional<Collection<DeviceBusElement>> getNeighbors() {
-        final LevelAccessor level = getLevel();
+        final Level level = getLevel();
         if (level == null || level.isClientSide()) {
             return Optional.empty();
         }
@@ -55,17 +57,9 @@ public abstract class AbstractBlockDeviceBusElement extends AbstractGroupingDevi
                 return Optional.empty();
             }
 
-            // TODO
-            /*
-            final BlockEntity blockEntity = level.getBlockEntity(neighborPos);
-            if (blockEntity == null) {
-                continue;
-            }
-
-            final LazyOptional<DeviceBusElement> capability = blockEntity.getCapability(Capabilities.deviceBusElement(), neighborDirection.getOpposite());
-            if (capability.isPresent()) {
-                neighbors.add(capability);
-            }*/
+            Optional
+                .ofNullable(level.getCapability(Capabilities.DeviceBus.BLOCK, neighborPos, neighborDirection.getOpposite()))
+                .ifPresent(neighbors::add);
         }
 
         return Optional.of(neighbors);

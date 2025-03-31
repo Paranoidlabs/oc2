@@ -362,7 +362,7 @@ public final class BusCableBlockEntity extends ModBlockEntity {
     private final class BusCableBusElement extends AbstractBlockDeviceBusElement {
         @Nullable
         @Override
-        public LevelAccessor getLevel() {
+        public Level getLevel() {
             return BusCableBlockEntity.this.getLevel();
         }
 
